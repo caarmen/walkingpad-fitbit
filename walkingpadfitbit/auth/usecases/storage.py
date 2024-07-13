@@ -19,9 +19,9 @@ def save_oauth_token(
 
 def read_oauth_token(
     username: str = DEFAULT_USER,
-):
+) -> OAuthToken | None:
     token_str = keyring.get_password(
         service_name=SERVICE_NAME,
         username=username,
     )
-    return OAuthToken.model_validate_json(token_str)
+    return OAuthToken.model_validate_json(token_str) if token_str else None

@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+
+<body>
+    <style>
+        .content {
+            display: flex;
+            flex-direction: column;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .instructions {
+            font-weight: bold;
+            font-size: 1.2em;
+            padding-bottom: 36px;
+        }
+
+        .result {
+            visibility: hidden;
+        }
+
+        .url {
+            font-style: italic;
+            color: #888;
+        }
+
+        .url-container {
+            display: flex;
+            gap: 10px;
+        }
+    </style>
+    <div>
+        <div class="content">
+            <div class="instructions">Copy this url and paste it in the WalkingPad Fitbit command input:</div>
+            <div class="url-container">
+                <div id="url" class="url"></div>
+                <button onclick="copyUrl()">Copy URL</button>
+            </div>
+            <div id="result" class="result">Url copied!</div>
+        </div>
+
+    </div>
+
+    <script>
+        function setUrl() {
+            const url = document.getElementById("url");
+            url.textContent = window.location.href;
+        }
+
+        async function copyUrl() {
+            await navigator.clipboard.writeText(window.location.href)
+            const result = document.getElementById("result");
+            result.style.visibility = "visible";
+        }
+
+        window.onload = setUrl;
+    </script>
+</body>
+
+</html>
