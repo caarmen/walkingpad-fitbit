@@ -1,5 +1,6 @@
 import asyncio
 import datetime as dt
+import logging
 
 from walkingpadfitbit.auth.client import get_client
 from walkingpadfitbit.auth.config import Settings
@@ -13,6 +14,10 @@ from walkingpadfitbit.interfaceadapters.fitbit.remoterepository import (
 async def main(
     env_file: str = ".env",
 ):
+    logging.basicConfig(
+        level=logging.INFO,
+        format="[%(asctime)s][%(levelname)-7s][%(name)-10s] %(message)s",
+    )
     settings = Settings(_env_file=env_file)
     oauth_settings = {
         "client_id": settings.fitbit_oauth_client_id,

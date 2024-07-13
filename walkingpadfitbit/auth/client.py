@@ -1,9 +1,12 @@
+import logging
 from typing import Any
 
 from authlib.integrations.httpx_client import AsyncOAuth2Client
 from authlib.oauth2.auth import OAuth2Token
 
 from walkingpadfitbit.auth import storage
+
+logger = logging.getLogger(__name__)
 
 
 def get_client(
@@ -16,7 +19,7 @@ def get_client(
         return None
 
     async def update_token(token: dict[str, Any], **kwargs):
-        print("update_token")
+        logger.info("update_token")
         if token.get("success") is False:
             raise Exception("bad refresh token")  # TODO specific exception
         storage.save_oauth_token(OAuth2Token.from_dict(token))
