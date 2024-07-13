@@ -3,7 +3,7 @@ from typing import Callable
 import pytest
 
 from tests.fixtures.authlib import AuthLibScenario
-from walkingpadfitbit.auth.usecases import storage
+from walkingpadfitbit.auth import storage
 from walkingpadfitbit.interfaceadapters.cli.logincli import login_cli
 
 

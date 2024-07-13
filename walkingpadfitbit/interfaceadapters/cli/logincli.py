@@ -1,6 +1,6 @@
 import webbrowser
 
-from walkingpadfitbit.auth.usecases.login import login
+from walkingpadfitbit.auth.login import login
 
 
 async def login_cli(

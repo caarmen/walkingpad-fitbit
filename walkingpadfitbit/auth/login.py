@@ -5,7 +5,7 @@ from authlib.integrations.httpx_client import AsyncOAuth2Client
 from authlib.oauth2 import OAuth2Error
 from authlib.oauth2.auth import OAuth2Token
 
-from walkingpadfitbit.auth.usecases import storage
+from walkingpadfitbit.auth import storage
 
 
 class AuthError(Exception):

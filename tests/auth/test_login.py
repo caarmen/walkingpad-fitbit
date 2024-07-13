@@ -3,8 +3,8 @@ from typing import Callable
 import pytest
 
 from tests.fixtures.authlib import AuthLibScenario
-from walkingpadfitbit.auth.usecases import storage
-from walkingpadfitbit.auth.usecases.login import login
+from walkingpadfitbit.auth import storage
+from walkingpadfitbit.auth.login import login
 
 
 @pytest.mark.asyncio

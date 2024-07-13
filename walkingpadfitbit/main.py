@@ -1,6 +1,6 @@
 import asyncio
 
-from walkingpadfitbit.auth.usecases.config import Settings
+from walkingpadfitbit.auth.config import Settings
 from walkingpadfitbit.interfaceadapters.cli.logincli import login_cli
 
 
