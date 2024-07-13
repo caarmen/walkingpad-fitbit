@@ -1,16 +1,39 @@
 import asyncio
+import datetime as dt
 
+from walkingpadfitbit.auth.client import get_client
 from walkingpadfitbit.auth.config import Settings
+from walkingpadfitbit.domain.entities.activity import Activity
 from walkingpadfitbit.interfaceadapters.cli.logincli import login_cli
+from walkingpadfitbit.interfaceadapters.fitbit.remoterepository import (
+    FitbitRemoteActivityRepository,
+)
 
 
 async def main(
     env_file: str = ".env",
 ):
     settings = Settings(_env_file=env_file)
-    await login_cli(
-        client_id=settings.fitbit_oauth_client_id,
-        client_secret=settings.fitbit_oauth_client_secret,
+    oauth_settings = {
+        "client_id": settings.fitbit_oauth_client_id,
+        "client_secret": settings.fitbit_oauth_client_secret,
+    }
+    client = get_client(**oauth_settings)
+    if not client:
+        await login_cli(**oauth_settings)
+        client = get_client(**oauth_settings)
+
+    activity_poster = FitbitRemoteActivityRepository(client)
+
+    # Send fake activity for now
+
+    await activity_poster.post_activity(
+        activity=Activity(
+            start_time=dt.time(hour=10, minute=30),
+            duration_ms=1200000,
+            date=dt.datetime.now(tz=dt.timezone.utc).date(),
+            distance_km=1.6,
+        )
     )
 
 

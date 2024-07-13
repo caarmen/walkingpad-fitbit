@@ -4,6 +4,7 @@ from typing import Any, Callable
 
 import pytest
 from authlib.integrations.httpx_client import AsyncOAuth2Client
+from httpx import Response
 
 
 @dataclass
@@ -50,6 +51,19 @@ def fake_oauth_client() -> Callable[[pytest.MonkeyPatch, AuthLibScenario], None]
             AsyncOAuth2Client,
             "fetch_token",
             fake_fetch_token,
+        )
+
+        # Fake the post() api
+        async def fake_post(self, url, params):
+            return Response(
+                status_code=200,
+                json={},
+            )
+
+        mp.setattr(
+            AsyncOAuth2Client,
+            "post",
+            fake_post,
         )
 
     return create_fake_oauth_client
