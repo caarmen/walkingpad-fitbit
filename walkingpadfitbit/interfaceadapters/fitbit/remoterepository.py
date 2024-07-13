@@ -1,5 +1,4 @@
-from authlib.integrations.httpx_client import AsyncOAuth2Client
-
+from walkingpadfitbit.auth.client import Client
 from walkingpadfitbit.domain.entities.activity import Activity
 from walkingpadfitbit.domain.remoterepository import RemoteActivityRepository
 
@@ -7,7 +6,7 @@ from walkingpadfitbit.domain.remoterepository import RemoteActivityRepository
 class FitbitRemoteActivityRepository(RemoteActivityRepository):
     def __init__(
         self,
-        client: AsyncOAuth2Client,
+        client: Client,
     ):
         self.client = client
 
