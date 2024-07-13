@@ -1,10 +1,9 @@
-import datetime as dt
 from typing import Callable
 
 import pytest
 
 from tests.fixtures.authlib import AuthLibScenario
-from walkingpadfitbit.auth.usecases import storage
+from walkingpadfitbit.auth import storage
 from walkingpadfitbit.interfaceadapters.cli.logincli import login_cli
 
 
@@ -26,7 +25,7 @@ async def test_login_cli(
             fake_callback_url="https://someapp.com/callack?a=1&b=2",
             fake_oauth_token={
                 "access_token": "some access token",
-                "expires_at": "2024-07-13T22:06:27Z",
+                "expires_at": 1720908387,
                 "refresh_token": "some refresh token",
                 "user_id": "some user id",
             },
@@ -47,9 +46,7 @@ async def test_login_cli(
 
         # Then the call is successful
         # And the oauth token is saved.
-        assert saved_token.access_token == "some access token"
-        assert saved_token.expires_at == dt.datetime(
-            2024, 7, 13, 22, 6, 27, tzinfo=dt.timezone.utc
-        )
-        assert saved_token.refresh_token == "some refresh token"
-        assert saved_token.user_id == "some user id"
+        assert saved_token["access_token"] == "some access token"
+        assert saved_token["expires_at"] == 1720908387
+        assert saved_token["refresh_token"] == "some refresh token"
+        assert saved_token["user_id"] == "some user id"

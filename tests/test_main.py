@@ -3,7 +3,7 @@ from typing import Callable
 import pytest
 
 from tests.fixtures.authlib import AuthLibScenario
-from walkingpadfitbit.auth.usecases import storage
+from walkingpadfitbit.auth import storage
 from walkingpadfitbit.main import main
 
 
@@ -25,7 +25,7 @@ async def test_main(
         scenario = AuthLibScenario(
             fake_oauth_token={
                 "access_token": "some access token",
-                "expires_at": "2024-07-13T22:06:27Z",
+                "expires_at": 1720908387,
                 "refresh_token": "some refresh token",
                 "user_id": "some user id",
             },

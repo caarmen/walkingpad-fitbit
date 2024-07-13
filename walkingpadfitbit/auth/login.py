@@ -3,9 +3,9 @@ from typing import AsyncGenerator
 from authlib.common.security import generate_token
 from authlib.integrations.httpx_client import AsyncOAuth2Client
 from authlib.oauth2 import OAuth2Error
+from authlib.oauth2.auth import OAuth2Token
 
-from walkingpadfitbit.auth.entities.oauth_token import OAuthToken
-from walkingpadfitbit.auth.usecases import storage
+from walkingpadfitbit.auth import storage
 
 
 class AuthError(Exception):
@@ -15,10 +15,10 @@ class AuthError(Exception):
 async def login(
     client_id: str,
     client_secret: str,
-) -> AsyncGenerator[str | OAuthToken, str]:
+) -> AsyncGenerator[str, str]:
     """
 
-    There are three interactions with this async generator:
+    There are two interactions with this async generator:
 
     1. It yields the authorization url which the user will have to open in
     their browser.
@@ -27,8 +27,6 @@ async def login(
     will attempt to redirect to a callback url to complete the login.
 
     2. The generator expects to be "sent" this callback url.
-
-    3. Finally, the generator yields the OAuthToken object.
 
     """
     base_url = "https://www.fitbit.com/oauth2"
@@ -66,8 +64,6 @@ async def login(
     except OAuth2Error as e:
         raise AuthError(f"{e.get_error_description()}") from e
 
-    token_obj = OAuthToken(**response_dict)
+    token_obj = OAuth2Token.from_dict(response_dict)
     storage.save_oauth_token(token_obj)
-
-    # 3. Yield the oauth token.
-    yield token_obj
+    yield
