@@ -20,7 +20,7 @@ class MemoryKeyRing(backend.KeyringBackend):
         service: str,
         username: str,
     ) -> str | None:
-        return self._data[username]
+        return self._data.get(username, None)
 
     def delete_password(
         self,
