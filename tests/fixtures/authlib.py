@@ -1,6 +1,7 @@
 import uuid
 from dataclasses import dataclass
 from typing import Any, Callable
+from unittest.mock import Mock, create_autospec
 
 import pytest
 from authlib.integrations.httpx_client import AsyncOAuth2Client
@@ -14,8 +15,17 @@ class AuthLibScenario:
     fake_oauth_token: dict[str, Any] | None = None
 
 
+@dataclass
+class AuthLibMocks:
+    create_authorization_url: Mock
+    fetch_token: Mock
+    post: Mock
+
+
 @pytest.fixture
-def fake_oauth_client() -> Callable[[pytest.MonkeyPatch, AuthLibScenario], None]:
+def fake_oauth_client() -> (
+    Callable[[pytest.MonkeyPatch, AuthLibScenario], AuthLibMocks]
+):
     """
     Use fake replacements for authlib apis.
     """
@@ -31,10 +41,14 @@ def fake_oauth_client() -> Callable[[pytest.MonkeyPatch, AuthLibScenario], None]
         def fake_create_authorization_url(self, *args, **kwargs):
             return (scenario.fake_authorization_url, fake_state)
 
+        mock_create_authorization_url = create_autospec(
+            AsyncOAuth2Client.create_authorization_url,
+            side_effect=fake_create_authorization_url,
+        )
         mp.setattr(
             AsyncOAuth2Client,
             "create_authorization_url",
-            fake_create_authorization_url,
+            mock_create_authorization_url,
         )
 
         # Fake the fetch_token() api.
@@ -47,10 +61,13 @@ def fake_oauth_client() -> Callable[[pytest.MonkeyPatch, AuthLibScenario], None]
             assert self.state == fake_state
             return scenario.fake_oauth_token
 
+        mock_fetch_token = create_autospec(
+            AsyncOAuth2Client.fetch_token, side_effect=fake_fetch_token
+        )
         mp.setattr(
             AsyncOAuth2Client,
             "fetch_token",
-            fake_fetch_token,
+            mock_fetch_token,
         )
 
         # Fake the post() api
@@ -60,10 +77,12 @@ def fake_oauth_client() -> Callable[[pytest.MonkeyPatch, AuthLibScenario], None]
                 json={},
             )
 
-        mp.setattr(
-            AsyncOAuth2Client,
-            "post",
-            fake_post,
+        mock_post = create_autospec(AsyncOAuth2Client.post, side_effect=fake_post)
+        mp.setattr(AsyncOAuth2Client, "post", mock_post)
+        return AuthLibMocks(
+            create_authorization_url=mock_create_authorization_url,
+            fetch_token=mock_fetch_token,
+            post=mock_post,
         )
 
     return create_fake_oauth_client

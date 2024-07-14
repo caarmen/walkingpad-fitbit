@@ -2,7 +2,7 @@ from typing import Callable
 
 import pytest
 
-from tests.fixtures.authlib import AuthLibScenario
+from tests.fixtures.authlib import AuthLibMocks, AuthLibScenario
 from walkingpadfitbit.auth import storage
 from walkingpadfitbit.auth.login import login
 
@@ -10,7 +10,7 @@ from walkingpadfitbit.auth.login import login
 @pytest.mark.asyncio
 async def test_oauth_login_success(
     monkeypatch: pytest.MonkeyPatch,
-    fake_oauth_client: Callable[[pytest.MonkeyPatch, AuthLibScenario], None],
+    fake_oauth_client: Callable[[pytest.MonkeyPatch, AuthLibScenario], AuthLibMocks],
 ):
     """
     Given an authlib setup to provide successful responses,
