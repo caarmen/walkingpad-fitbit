@@ -4,7 +4,6 @@ from pydantic import BaseModel
 
 
 class Activity(BaseModel):
-    start_time: dt.time
+    start: dt.datetime
     duration_ms: int
-    date: dt.date
     distance_km: float

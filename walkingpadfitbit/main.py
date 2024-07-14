@@ -29,14 +29,13 @@ async def main(
         client = get_client(**oauth_settings)
 
     activity_poster = FitbitRemoteActivityRepository(client)
-
     # Send fake activity for now
-
     await activity_poster.post_activity(
         activity=Activity(
-            start_time=dt.time(hour=10, minute=30),
+            start=dt.datetime.now(tz=dt.timezone.utc).replace(
+                hour=10, minute=30, second=0, microsecond=0
+            ),
             duration_ms=1200000,
-            date=dt.datetime.now(tz=dt.timezone.utc).date(),
             distance_km=1.6,
         )
     )

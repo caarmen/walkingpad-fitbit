@@ -14,9 +14,9 @@ class FitbitRemoteActivityRepository(RemoteActivityRepository):
         await self.client.post(
             url="https://api.fitbit.com/1/user/-/activities.json",
             params={
-                "startTime": activity.start_time.strftime("%H:%M"),
+                "date": activity.start.strftime("%Y-%m-%d"),
+                "startTime": activity.start.strftime("%H:%M"),
                 "durationMillis": activity.duration_ms,
-                "date": activity.date.strftime("%Y-%m-%d"),
                 "distance": activity.distance_km,
                 "activityId": 90019,
                 "distanceUnit": "Kilometer",
