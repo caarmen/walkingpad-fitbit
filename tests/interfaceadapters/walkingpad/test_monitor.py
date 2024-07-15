@@ -1,7 +1,8 @@
 import datetime as dt
 from dataclasses import dataclass
 from types import ModuleType
-from typing import Callable
+from typing import Any, Callable
+from zoneinfo import ZoneInfo
 
 import pytest
 
@@ -38,7 +39,7 @@ MONITOR_SCENARIOS = [
         expected_post_call_count=1,
         expected_post_query_params={
             "date": "2038-04-01",
-            "startTime": "11:13",
+            "startTime": "04:13",
             "durationMillis": 1200000,
             "distance": pytest.approx(1.253),
             "activityId": 90019,
@@ -126,7 +127,9 @@ MONITOR_SCENARIOS = [
 async def test_monitor(
     monkeypatch: pytest.MonkeyPatch,
     treadmill_event_handler: TreadmillEventHandler,
-    freeze_time: Callable[[pytest.MonkeyPatch, ModuleType, dt.datetime], None],
+    freeze_time: Callable[
+        [pytest.MonkeyPatch, ModuleType, tuple[Any], dt.timezone], None
+    ],
     fake_oauth_client: Callable[[pytest.MonkeyPatch, AuthLibScenario], AuthLibMocks],
     fake_walking_pad: Callable[[pytest.MonkeyPatch, WalkingPadScenario], None],
     monitor_scenario: MonitorScenario,
@@ -142,7 +145,8 @@ async def test_monitor(
         freeze_time(
             mp,
             datetime_to_freeze,
-            dt.datetime(2038, 4, 1, 11, 33, 44, 0, tzinfo=dt.timezone.utc),
+            frozen_datetime_args=(2038, 4, 1, 11, 33, 44, 0),
+            local_timezone=ZoneInfo("America/Los_Angeles"),
         )
         authlib_mocks: AuthLibMocks = fake_oauth_client(mp, AuthLibScenario())
         fake_walking_pad(
