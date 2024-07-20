@@ -1,6 +1,7 @@
 rm -rf reports
 
 python -m pytest \
+  --numprocesses=auto \
   --cov=walkingpadfitbit \
   --cov-report=xml \
   --cov-report=html \
