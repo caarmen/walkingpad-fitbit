@@ -1,6 +1,7 @@
 import asyncio
 import logging
 import signal
+import time
 from asyncio import sleep
 
 from ph4_walkingpad.pad import Controller, Scanner, WalkingPadCurStatus
@@ -50,8 +51,8 @@ def _to_treadmill_event(status: WalkingPadCurStatus) -> TreadmillEvent | None:
 async def monitor(
     device_name: str,
     treadmill_event_handler: TreadmillEventHandler,
-    max_iterations: int | None = None,
-    sleep_duration_s: float = 1.0,
+    monitor_duration_s: float | None = None,
+    poll_interval_s: float = 1.0,
 ):
     """
     1. Find the device with the given name.
@@ -78,13 +79,20 @@ async def monitor(
     await ctler.run(device_address)
 
     # 3. Loop, asking the controller for stats.
-    iterations = 0
-    while not program_end_event.is_set() and (
-        max_iterations is None or iterations < max_iterations
-    ):
+    start_timestamp = time.time()
+    stop_timestamp = (
+        start_timestamp + monitor_duration_s if monitor_duration_s else None
+    )
+
+    while not program_end_event.is_set():
         await ctler.ask_stats()
-        await sleep(sleep_duration_s)
-        iterations += 1
+        if stop_timestamp and time.time() > stop_timestamp:
+            # Send an event signaling the end of the walk, so it can be logged
+            # if it wasn't logged already:
+            treadmill_event_handler.handle_treadmill_event(TreadmillStopEvent)
+            await treadmill_event_handler.flush()
+            break
+        await sleep(poll_interval_s)
 
     logger.info("Stop monitoring")
 
