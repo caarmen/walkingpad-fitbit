@@ -161,8 +161,8 @@ async def test_monitor(
         await monitor(
             device_name="some device",
             treadmill_event_handler=treadmill_event_handler,
-            max_iterations=3,
-            sleep_duration_s=0.1,
+            monitor_duration_s=1.0,
+            poll_interval_s=0.1,
         )
 
         # Then we send the expected api calls to Fitbit to log (or not) the activity.
