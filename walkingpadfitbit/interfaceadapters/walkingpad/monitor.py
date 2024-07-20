@@ -87,6 +87,10 @@ async def monitor(
     while not program_end_event.is_set():
         await ctler.ask_stats()
         if stop_timestamp and time.time() > stop_timestamp:
+            # Send an event signaling the end of the walk, so it can be logged
+            # if it wasn't logged already:
+            treadmill_event_handler.handle_treadmill_event(TreadmillStopEvent)
+            await treadmill_event_handler.flush()
             break
         await sleep(poll_interval_s)
 

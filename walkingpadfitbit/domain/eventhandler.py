@@ -43,6 +43,11 @@ class TreadmillEventHandler:
                 distance_km=last_walk_event.dist_km,
             )
             asyncio.create_task(
-                self._remote_activity_repository.post_activity(activity)
+                self._remote_activity_repository.post_activity(activity),
+                name="post_activity",
             )
             self._last_walk_event = None
+
+    async def flush(self):
+        tasks = [t for t in asyncio.all_tasks() if t.get_name() == "post_activity"]
+        await asyncio.gather(*tasks)
