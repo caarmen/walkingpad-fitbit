@@ -17,10 +17,29 @@ class FakeWalkingPadCurStatus:
     belt_state: int
 
 
+# Fake the values returned by BleakClient.is_connected
+class FakeBleakClient:
+    def __init__(self, fake_is_connected_values: list[bool] | None = None):
+        self.is_connected_values = (
+            fake_is_connected_values if fake_is_connected_values else [True]
+        )
+
+    @property
+    def is_connected(self):
+        result = self.is_connected_values[0]
+        if len(self.is_connected_values) > 1:
+            self.is_connected_values.pop(0)
+        return result
+
+    async def disconnect(self):
+        pass
+
+
 @dataclass
 class WalkingPadScenario:
     found_addresses: list[str] | None = None
     cur_statuses: list[FakeWalkingPadCurStatus] | None = None
+    is_connected_values: list[bool] | None = None
 
 
 @pytest.fixture
@@ -44,9 +63,11 @@ def fake_walking_pad() -> Callable[[pytest.MonkeyPatch, WalkingPadScenario], Non
 
         mp.setattr(Scanner, "scan", scanner_fake_scan)
 
-        # Make the Controller.run() method a no-op
+        # Make the Controller.run() method instantiate our fake client.
         async def controller_fake_run(self, *args, **kwargs):
-            pass
+            self.client = FakeBleakClient(
+                fake_is_connected_values=scenario.is_connected_values
+            )
 
         mp.setattr(Controller, "run", controller_fake_run)
 
