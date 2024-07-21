@@ -221,6 +221,14 @@ MONITORING_INTERRUPTED_SCENARIOS = [
 
 @pytest.mark.asyncio
 @pytest.mark.parametrize(
+    ids=["connected", "disconnected"],
+    argnames="is_connected_values",
+    argvalues=[
+        [True, True, True],
+        [True, False, True],
+    ],
+)
+@pytest.mark.parametrize(
     ids=[x.id for x in MONITOR_DURATION_ELAPSED_SCENARIOS],
     argnames=["monitor_scenario"],
     argvalues=[[x] for x in MONITOR_DURATION_ELAPSED_SCENARIOS],
@@ -234,6 +242,7 @@ async def test_monitor_monitoring_duration_elapsed(
     fake_oauth_client: Callable[[pytest.MonkeyPatch, AuthLibScenario], AuthLibMocks],
     fake_walking_pad: Callable[[pytest.MonkeyPatch, WalkingPadScenario], None],
     monitor_scenario: MonitorScenario,
+    is_connected_values: list[bool],
 ):
     """
     Given a scenario where the walking pad emits certain data
@@ -255,6 +264,7 @@ async def test_monitor_monitoring_duration_elapsed(
             WalkingPadScenario(
                 found_addresses=["some address"],
                 cur_statuses=monitor_scenario.fake_walking_pad_cur_statuses,
+                is_connected_values=is_connected_values,
             ),
         )
 
@@ -277,6 +287,14 @@ async def test_monitor_monitoring_duration_elapsed(
 
 @pytest.mark.asyncio
 @pytest.mark.parametrize(
+    ids=["connected", "disconnected"],
+    argnames="is_connected_values",
+    argvalues=[
+        [True, True, True],
+        [True, False, True],
+    ],
+)
+@pytest.mark.parametrize(
     ids=[x.id for x in MONITORING_INTERRUPTED_SCENARIOS],
     argnames=["monitor_scenario"],
     argvalues=[[x] for x in MONITORING_INTERRUPTED_SCENARIOS],
@@ -290,6 +308,7 @@ async def test_monitor_monitoring_interrupted(
     fake_oauth_client: Callable[[pytest.MonkeyPatch, AuthLibScenario], AuthLibMocks],
     fake_walking_pad: Callable[[pytest.MonkeyPatch, WalkingPadScenario], None],
     monitor_scenario: MonitorScenario,
+    is_connected_values: list[bool],
 ):
     """
     Given a scenario where the walking pad emits certain data
@@ -311,6 +330,7 @@ async def test_monitor_monitoring_interrupted(
             WalkingPadScenario(
                 found_addresses=["some address"],
                 cur_statuses=monitor_scenario.fake_walking_pad_cur_statuses,
+                is_connected_values=is_connected_values,
             ),
         )
 

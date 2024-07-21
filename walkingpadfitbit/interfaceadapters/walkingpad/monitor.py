@@ -68,7 +68,8 @@ async def monitor(
         logger.error(f"{device_name} not found")
         return
 
-    device_address = scanner.walking_belt_candidates[0].address
+    device = scanner.walking_belt_candidates[0]
+    logger.info(f"Found device {device}")
 
     # 2. Run the controller for the found device.
     ctler = Controller()
@@ -76,8 +77,7 @@ async def monitor(
         status, treadmill_event_handler
     )
 
-    await ctler.run(device_address)
-
+    await ctler.run(device)
     # 3. Loop, asking the controller for stats.
     start_timestamp = time.time()
     stop_timestamp = (
@@ -93,6 +93,15 @@ async def monitor(
             await treadmill_event_handler.flush()
             break
         await sleep(poll_interval_s)
+
+        if not ctler.client.is_connected:
+            logger.info("Got disconnected. Reconnecting...")
+            await ctler.disconnect()
+            await sleep(5)
+            try:
+                await ctler.run(device)
+            except TimeoutError:
+                logger.warn("Timeout trying to reconnect")
 
     logger.info("Stop monitoring")
 
