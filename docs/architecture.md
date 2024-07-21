@@ -10,6 +10,7 @@ flowchart TD
     interfaceadapters
 
     authlib(("authlib"))
+    ph4_walkingpad(("ph4<br>walkingpad"))
 
     main --> auth
     main --> domain
@@ -18,6 +19,7 @@ flowchart TD
     interfaceadapters --> domain
     interfaceadapters --> auth
 
+    interfaceadapters --> ph4_walkingpad
     auth --> authlib
 ```
 
@@ -32,9 +34,11 @@ flowchart TD
     subgraph interfaceadapters
         cli
         fitbit
+        walkingpad
     end
 
     authlib(("authlib"))
+    ph4_walkingpad(("ph4<br>walkingpad"))
 
     main --> auth
     main --> domain
@@ -43,6 +47,7 @@ flowchart TD
     interfaceadapters --> domain
     interfaceadapters --> auth
 
+    interfaceadapters --> ph4_walkingpad
     auth --> authlib
 ```
 
@@ -57,9 +62,11 @@ flowchart TD
         storage
     end
     subgraph domain
+        eventhandler
         remoterepository
         subgraph entities
             activity
+            event
         end
     end
     subgraph interfaceadapters
@@ -69,9 +76,13 @@ flowchart TD
         subgraph fitbit
             fitbitemoterepository["remoterepository"]
         end
+        subgraph walkingpad
+            monitor
+        end
     end
 
     authlib(("authlib"))
+    ph4_walkingpad(("ph4<br>walkingpad"))
 
     main --> auth
     main --> domain
@@ -79,5 +90,6 @@ flowchart TD
 
     interfaceadapters --> domain
     interfaceadapters --> auth
+    interfaceadapters --> ph4_walkingpad
     auth --> authlib
 ```
