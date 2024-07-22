@@ -28,7 +28,7 @@ def on_cur_status_received(
         treadmill_event_handler.handle_treadmill_event(treadmill_event)
 
 
-def _to_treadmill_event(status: WalkingPadCurStatus) -> TreadmillEvent | None:
+def _to_treadmill_event(status: WalkingPadCurStatus) -> TreadmillEvent:
     # status.dist is "distance in 10 meters"
     # distance_m = status.dist * 10
     # distance_km = distance_m / 1000
@@ -41,11 +41,7 @@ def _to_treadmill_event(status: WalkingPadCurStatus) -> TreadmillEvent | None:
             time_s=status.time,
             dist_km=status.dist / 100,
         )
-    if status.belt_state == 0:
-        return TreadmillStopEvent
-
-    logger.info(f"Ignored cur status {status}")
-    return None
+    return TreadmillStopEvent
 
 
 async def monitor(
