@@ -198,7 +198,15 @@ MONITORING_INTERRUPTED_SCENARIOS = [
                 time=0,
             ),
         ],
-        expected_post_call_count=0,
+        expected_post_call_count=1,
+        expected_post_query_params={
+            "date": "2038-04-01",
+            "startTime": "04:13",
+            "durationMillis": 1201000,
+            "distance": pytest.approx(1.253),
+            "activityId": 90019,
+            "distanceUnit": "Kilometer",
+        },
     ),
     MonitorScenario(
         id="one stop, one walk",
