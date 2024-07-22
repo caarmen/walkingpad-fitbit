@@ -80,6 +80,7 @@ async def monitor(
         start_timestamp + monitor_duration_s if monitor_duration_s else None
     )
 
+    program_end_event.clear()
     while not program_end_event.is_set():
         await ctler.ask_stats()
         if stop_timestamp and time.time() > stop_timestamp:
