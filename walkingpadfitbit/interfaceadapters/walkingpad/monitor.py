@@ -98,7 +98,7 @@ async def monitor(
             try:
                 await ctler.run(device)
             except TimeoutError:
-                logger.warn("Timeout trying to reconnect")
+                logger.warning("Timeout trying to reconnect")
 
     logger.info("Stop monitoring")
 
