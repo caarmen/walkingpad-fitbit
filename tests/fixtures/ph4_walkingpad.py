@@ -40,6 +40,7 @@ class WalkingPadScenario:
     found_addresses: list[str] | None = None
     cur_statuses: list[FakeWalkingPadCurStatus] | None = None
     is_connected_values: list[bool] | None = None
+    controller_run_exceptions: list[Exception | None] = None
 
 
 @pytest.fixture
@@ -64,7 +65,20 @@ def fake_walking_pad() -> Callable[[pytest.MonkeyPatch, WalkingPadScenario], Non
         mp.setattr(Scanner, "scan", scanner_fake_scan)
 
         # Make the Controller.run() method instantiate our fake client.
+        controller_run_iterations = 0
+
         async def controller_fake_run(self, *args, **kwargs):
+            nonlocal controller_run_iterations
+            if scenario.controller_run_exceptions and controller_run_iterations < len(
+                scenario.controller_run_exceptions
+            ):
+                exception_to_raise = scenario.controller_run_exceptions[
+                    controller_run_iterations
+                ]
+                controller_run_iterations += 1
+                if exception_to_raise:
+                    raise exception_to_raise
+
             self.client = FakeBleakClient(
                 fake_is_connected_values=scenario.is_connected_values
             )
@@ -72,13 +86,15 @@ def fake_walking_pad() -> Callable[[pytest.MonkeyPatch, WalkingPadScenario], Non
         mp.setattr(Controller, "run", controller_fake_run)
 
         # Fake the Controller.ask_stats() method to return the stats configured in the scenario.
-        iterations = 0
+        ask_stats_iterations = 0
 
         async def controller_fake_ask_stats(self):
-            nonlocal iterations
-            if iterations < len(scenario.cur_statuses):
-                self.handler_cur_status(None, scenario.cur_statuses[iterations])
-                iterations += 1
+            nonlocal ask_stats_iterations
+            if ask_stats_iterations < len(scenario.cur_statuses):
+                self.handler_cur_status(
+                    None, scenario.cur_statuses[ask_stats_iterations]
+                )
+                ask_stats_iterations += 1
 
         mp.setattr(Controller, "ask_stats", controller_fake_ask_stats)
 
