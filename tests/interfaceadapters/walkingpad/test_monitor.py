@@ -7,6 +7,7 @@ from typing import Any, Callable
 from zoneinfo import ZoneInfo
 
 import pytest
+from bleak.exc import BleakDeviceNotFoundError
 
 from tests.fixtures.authlib import AuthLibMocks, AuthLibScenario
 from tests.fixtures.ph4_walkingpad import FakeWalkingPadCurStatus, WalkingPadScenario
@@ -229,6 +230,15 @@ MONITORING_INTERRUPTED_SCENARIOS = [
 
 @pytest.mark.asyncio
 @pytest.mark.parametrize(
+    ids=["no exception", "reconnect timeout", "bleak exception"],
+    argnames="controller_run_exceptions",
+    argvalues=[
+        None,
+        [None, TimeoutError],
+        [None, BleakDeviceNotFoundError("my device")],
+    ],
+)
+@pytest.mark.parametrize(
     ids=["connected", "disconnected"],
     argnames="is_connected_values",
     argvalues=[
@@ -251,6 +261,7 @@ async def test_monitor_monitoring_duration_elapsed(
     fake_walking_pad: Callable[[pytest.MonkeyPatch, WalkingPadScenario], None],
     monitor_scenario: MonitorScenario,
     is_connected_values: list[bool],
+    controller_run_exceptions: list[Exception],
 ):
     """
     Given a scenario where the walking pad emits certain data
@@ -273,6 +284,7 @@ async def test_monitor_monitoring_duration_elapsed(
                 found_addresses=["some address"],
                 cur_statuses=monitor_scenario.fake_walking_pad_cur_statuses,
                 is_connected_values=is_connected_values,
+                controller_run_exceptions=controller_run_exceptions,
             ),
         )
 
@@ -294,6 +306,15 @@ async def test_monitor_monitoring_duration_elapsed(
 
 
 @pytest.mark.asyncio
+@pytest.mark.parametrize(
+    ids=["no exception", "reconnect timeout", "bleak exception"],
+    argnames="controller_run_exceptions",
+    argvalues=[
+        None,
+        [None, TimeoutError],
+        [None, BleakDeviceNotFoundError("my device")],
+    ],
+)
 @pytest.mark.parametrize(
     ids=["connected", "disconnected"],
     argnames="is_connected_values",
@@ -317,6 +338,7 @@ async def test_monitor_monitoring_interrupted(
     fake_walking_pad: Callable[[pytest.MonkeyPatch, WalkingPadScenario], None],
     monitor_scenario: MonitorScenario,
     is_connected_values: list[bool],
+    controller_run_exceptions: list[Exception],
 ):
     """
     Given a scenario where the walking pad emits certain data
@@ -339,6 +361,7 @@ async def test_monitor_monitoring_interrupted(
                 found_addresses=["some address"],
                 cur_statuses=monitor_scenario.fake_walking_pad_cur_statuses,
                 is_connected_values=is_connected_values,
+                controller_run_exceptions=controller_run_exceptions,
             ),
         )
 
