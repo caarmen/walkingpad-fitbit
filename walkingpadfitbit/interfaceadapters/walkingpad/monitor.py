@@ -4,6 +4,7 @@ import signal
 import time
 from asyncio import sleep
 
+from bleak.exc import BleakError
 from ph4_walkingpad.pad import Controller, Scanner, WalkingPadCurStatus
 
 from walkingpadfitbit.domain.entities.event import (
@@ -99,6 +100,8 @@ async def monitor(
                 await ctler.run(device)
             except TimeoutError:
                 logger.warning("Timeout trying to reconnect")
+            except BleakError as e:
+                logger.exception("Error trying to reconnect: %s", e)
 
     logger.info("Stop monitoring")
 
