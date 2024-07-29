@@ -101,7 +101,9 @@ async def monitor(
             except TimeoutError:
                 logger.warning("Timeout trying to reconnect")
             except BleakError as e:
-                logger.exception("Error trying to reconnect: %s", e)
+                logger.exception("BleakError trying to reconnect: %s", e)
+            except Exception as e:
+                logger.exception("Exception trying to reconnect: %s", e)
 
     logger.info("Stop monitoring")
 
