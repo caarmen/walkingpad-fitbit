@@ -230,12 +230,18 @@ MONITORING_INTERRUPTED_SCENARIOS = [
 
 @pytest.mark.asyncio
 @pytest.mark.parametrize(
-    ids=["no exception", "reconnect timeout", "bleak exception"],
+    ids=[
+        "no exception",
+        "reconnect timeout",
+        "bleak exception",
+        "unexpected error",
+    ],
     argnames="controller_run_exceptions",
     argvalues=[
         None,
         [None, TimeoutError],
         [None, BleakDeviceNotFoundError("my device")],
+        [None, ValueError("omg")],
     ],
 )
 @pytest.mark.parametrize(
@@ -307,12 +313,13 @@ async def test_monitor_monitoring_duration_elapsed(
 
 @pytest.mark.asyncio
 @pytest.mark.parametrize(
-    ids=["no exception", "reconnect timeout", "bleak exception"],
+    ids=["no exception", "reconnect timeout", "bleak exception", "unexpected error"],
     argnames="controller_run_exceptions",
     argvalues=[
         None,
         [None, TimeoutError],
         [None, BleakDeviceNotFoundError("my device")],
+        [None, ValueError("omg")],
     ],
 )
 @pytest.mark.parametrize(
