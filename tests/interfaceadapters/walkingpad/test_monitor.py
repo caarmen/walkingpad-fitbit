@@ -9,8 +9,13 @@ from zoneinfo import ZoneInfo
 import pytest
 from bleak.exc import BleakDeviceNotFoundError
 
+from tests.fakes.ph4_walkingpad.config import configure_fake_walkingpad
+from tests.fakes.ph4_walkingpad.fakecontroller import (
+    ControllerScenario,
+    FakeWalkingPadCurStatus,
+)
+from tests.fakes.ph4_walkingpad.fakescanner import ScannerScenario
 from tests.fixtures.authlib import AuthLibMocks, AuthLibScenario
-from tests.fixtures.ph4_walkingpad import FakeWalkingPadCurStatus, WalkingPadScenario
 from walkingpadfitbit.domain.eventhandler import TreadmillEventHandler
 from walkingpadfitbit.domain.eventhandler import dt as datetime_to_freeze
 from walkingpadfitbit.interfaceadapters.walkingpad.monitor import monitor
@@ -264,7 +269,6 @@ async def test_monitor_monitoring_duration_elapsed(
         [pytest.MonkeyPatch, ModuleType, tuple[Any], dt.timezone], None
     ],
     fake_oauth_client: Callable[[pytest.MonkeyPatch, AuthLibScenario], AuthLibMocks],
-    fake_walking_pad: Callable[[pytest.MonkeyPatch, WalkingPadScenario], None],
     monitor_scenario: MonitorScenario,
     is_connected_values: list[bool],
     controller_run_exceptions: list[Exception],
@@ -284,13 +288,15 @@ async def test_monitor_monitoring_duration_elapsed(
             local_timezone=ZoneInfo("America/Los_Angeles"),
         )
         authlib_mocks: AuthLibMocks = fake_oauth_client(mp, AuthLibScenario())
-        fake_walking_pad(
+        configure_fake_walkingpad(
             mp,
-            WalkingPadScenario(
+            ScannerScenario(
                 found_addresses=["some address"],
+            ),
+            ControllerScenario(
                 cur_statuses=monitor_scenario.fake_walking_pad_cur_statuses,
                 is_connected_values=is_connected_values,
-                controller_run_exceptions=controller_run_exceptions,
+                run_exceptions=controller_run_exceptions,
             ),
         )
 
@@ -342,7 +348,6 @@ async def test_monitor_monitoring_interrupted(
         [pytest.MonkeyPatch, ModuleType, tuple[Any], dt.timezone], None
     ],
     fake_oauth_client: Callable[[pytest.MonkeyPatch, AuthLibScenario], AuthLibMocks],
-    fake_walking_pad: Callable[[pytest.MonkeyPatch, WalkingPadScenario], None],
     monitor_scenario: MonitorScenario,
     is_connected_values: list[bool],
     controller_run_exceptions: list[Exception],
@@ -362,13 +367,15 @@ async def test_monitor_monitoring_interrupted(
             local_timezone=ZoneInfo("America/Los_Angeles"),
         )
         authlib_mocks: AuthLibMocks = fake_oauth_client(mp, AuthLibScenario())
-        fake_walking_pad(
+        configure_fake_walkingpad(
             mp,
-            WalkingPadScenario(
+            ScannerScenario(
                 found_addresses=["some address"],
+            ),
+            ControllerScenario(
                 cur_statuses=monitor_scenario.fake_walking_pad_cur_statuses,
                 is_connected_values=is_connected_values,
-                controller_run_exceptions=controller_run_exceptions,
+                run_exceptions=controller_run_exceptions,
             ),
         )
 

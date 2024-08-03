@@ -4,6 +4,5 @@ pytest_plugins=[
     "tests.fixtures.builtins",
     "tests.fixtures.domain",
     "tests.fixtures.keyring",
-    "tests.fixtures.ph4_walkingpad",
     "tests.fixtures.webbrowser",
 ]
