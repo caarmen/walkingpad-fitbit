@@ -3,8 +3,8 @@ import logging
 import signal
 import time
 from asyncio import sleep
+from typing import Any, Awaitable, Callable
 
-from bleak.exc import BleakError
 from ph4_walkingpad.pad import Controller, Scanner, WalkingPadCurStatus
 
 from walkingpadfitbit.domain.entities.event import (
@@ -45,6 +45,17 @@ def _to_treadmill_event(status: WalkingPadCurStatus) -> TreadmillEvent:
     return TreadmillStopEvent
 
 
+async def _safe_call(
+    fn: Callable[..., Awaitable[Any]],
+    *args,
+    **kwargs,
+) -> None:
+    try:
+        await fn(*args, **kwargs)
+    except Exception as e:
+        logger.exception("Exception: %s", e)
+
+
 async def monitor(
     device_name: str,
     treadmill_event_handler: TreadmillEventHandler,
@@ -83,7 +94,7 @@ async def monitor(
 
     program_end_event.clear()
     while not program_end_event.is_set():
-        await ctler.ask_stats()
+        await _safe_call(ctler.ask_stats)
         if stop_timestamp and time.time() > stop_timestamp:
             # Send an event signaling the end of the walk, so it can be logged
             # if it wasn't logged already:
@@ -94,16 +105,9 @@ async def monitor(
 
         if not ctler.client.is_connected:
             logger.info("Got disconnected. Reconnecting...")
-            await ctler.disconnect()
+            await _safe_call(ctler.disconnect)
             await sleep(5)
-            try:
-                await ctler.run(device)
-            except TimeoutError:
-                logger.warning("Timeout trying to reconnect")
-            except BleakError as e:
-                logger.exception("BleakError trying to reconnect: %s", e)
-            except Exception as e:
-                logger.exception("Exception trying to reconnect: %s", e)
+            await _safe_call(ctler.run, device)
 
     logger.info("Stop monitoring")
 
