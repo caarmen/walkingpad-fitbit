@@ -5,8 +5,8 @@ from typing import Callable
 
 import pytest
 
+from tests.fakes.ph4_walkingpad.config import configure_fake_walkingpad
 from tests.fixtures.authlib import AuthLibMocks, AuthLibScenario
-from tests.fixtures.ph4_walkingpad import WalkingPadScenario
 from walkingpadfitbit.auth import storage
 from walkingpadfitbit.main import main
 
@@ -22,7 +22,6 @@ fake_oauth_token = {
 async def test_main_required_args(
     monkeypatch: pytest.MonkeyPatch,
     fake_oauth_client: Callable[[pytest.MonkeyPatch, AuthLibScenario], AuthLibMocks],
-    fake_walking_pad: Callable[[pytest.MonkeyPatch, WalkingPadScenario], None],
 ):
     """
     Given an authlib setup to provide successful responses,
@@ -39,7 +38,7 @@ async def test_main_required_args(
         fake_oauth_client(mp, scenario)
 
         # Given no connected walkingpad
-        fake_walking_pad(mp, WalkingPadScenario())
+        configure_fake_walkingpad(mp)
 
         # Simulate the user's command-line arguments.
         mp.setattr(sys, "argv", ["main.py", "some device name"])
@@ -69,7 +68,6 @@ async def test_main_required_args(
 async def test_main_optional_args(
     monkeypatch: pytest.MonkeyPatch,
     fake_oauth_client: Callable[[pytest.MonkeyPatch, AuthLibScenario], AuthLibMocks],
-    fake_walking_pad: Callable[[pytest.MonkeyPatch, WalkingPadScenario], None],
 ):
     """
     Given an authlib setup to provide successful responses,
@@ -86,7 +84,7 @@ async def test_main_optional_args(
         fake_oauth_client(mp, scenario)
 
         # Given no connected walkingpad
-        fake_walking_pad(mp, WalkingPadScenario())
+        configure_fake_walkingpad(mp)
 
         # Simulate the user's command-line arguments.
         mp.setattr(
