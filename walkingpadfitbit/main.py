@@ -1,5 +1,6 @@
 import asyncio
 import logging
+import sys
 
 from walkingpadfitbit.auth.client import get_client
 from walkingpadfitbit.auth.config import Settings
@@ -18,6 +19,7 @@ async def main(
     # Set up logging
     logging.basicConfig(
         level=logging.INFO,
+        stream=sys.stderr,
         format="[%(asctime)s][%(levelname)-7s][%(name)-10s] %(message)s",
     )
 
