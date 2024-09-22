@@ -20,5 +20,6 @@ class FitbitRemoteActivityRepository(RemoteActivityRepository):
                 "distance": activity.distance_km,
                 "activityId": 90019,
                 "distanceUnit": "Kilometer",
+                "manualCalories": 0,
             },
         )
