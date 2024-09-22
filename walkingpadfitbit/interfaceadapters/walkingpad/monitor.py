@@ -41,6 +41,7 @@ def _to_treadmill_event(status: WalkingPadCurStatus) -> TreadmillEvent:
         return TreadmillWalkEvent(
             time_s=status.time,
             dist_km=status.dist / 100,
+            speed_kph=status.speed / 10,
         )
     return TreadmillStopEvent
 

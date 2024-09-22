@@ -45,7 +45,7 @@ Use this name when using the `walkingpadfitbit` command.
 ### Command options
 ```
 % python -m walkingpadfitbit.main --help
-usage: main.py [-h] [-d MONITOR_DURATION_S] [-p POLL_INTERVAL_S] device_name
+usage: main.py [-h] [-d MONITOR_DURATION_S] [-p POLL_INTERVAL_S] [-m {plaintext,richtext,json}] device_name
 
 positional arguments:
   device_name           Name of the walkingpad device (ex: KS-ST-A1P).
@@ -56,6 +56,8 @@ options:
                         Monitoring duration in seconds. By default the program monitors forever.
   -p POLL_INTERVAL_S, --poll-interval POLL_INTERVAL_S
                         Poll interval in seconds (default 1.0).
+  -m {plaintext,richtext,json}, --display-mode {plaintext,richtext,json}
+                        Display mode
 ```
 
 ### Example command

@@ -8,6 +8,7 @@ class FakeWalkingPadCurStatus:
     dist: float
     time: int
     belt_state: int
+    speed: int
 
 
 @dataclass

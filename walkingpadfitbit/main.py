@@ -4,6 +4,8 @@ import sys
 
 from walkingpadfitbit.auth.client import get_client
 from walkingpadfitbit.auth.config import Settings
+from walkingpadfitbit.domain.display.base import BaseDisplay
+from walkingpadfitbit.domain.display.factory import get_display
 from walkingpadfitbit.domain.eventhandler import TreadmillEventHandler
 from walkingpadfitbit.interfaceadapters.cli.argparser import CliArgs, parse_args
 from walkingpadfitbit.interfaceadapters.cli.logincli import login_cli
@@ -38,9 +40,11 @@ async def main(
         client = get_client(**oauth_settings)
 
     # Start monitoring
+    display: BaseDisplay = get_display(args.display_mode)
     remote_activity_repository = FitbitRemoteActivityRepository(client)
     treadmill_event_handler = TreadmillEventHandler(
         remote_activity_repository=remote_activity_repository,
+        display=display,
     )
     await monitor(
         device_name=args.device_name,
