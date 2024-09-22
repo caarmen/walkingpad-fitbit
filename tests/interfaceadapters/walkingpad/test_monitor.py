@@ -52,6 +52,7 @@ MONITOR_DURATION_ELAPSED_SCENARIOS = [
             "distance": pytest.approx(1.253),
             "activityId": 90019,
             "distanceUnit": "Kilometer",
+            "manualCalories": 0,
         },
     ),
     MonitorScenario(
@@ -81,6 +82,7 @@ MONITOR_DURATION_ELAPSED_SCENARIOS = [
             "distance": pytest.approx(1.253),
             "activityId": 90019,
             "distanceUnit": "Kilometer",
+            "manualCalories": 0,
         },
     ),
     MonitorScenario(
@@ -121,6 +123,7 @@ MONITOR_DURATION_ELAPSED_SCENARIOS = [
             "distance": pytest.approx(1.253),
             "activityId": 90019,
             "distanceUnit": "Kilometer",
+            "manualCalories": 0,
         },
     ),
     MonitorScenario(
@@ -145,6 +148,7 @@ MONITOR_DURATION_ELAPSED_SCENARIOS = [
             "distance": pytest.approx(1.253),
             "activityId": 90019,
             "distanceUnit": "Kilometer",
+            "manualCalories": 0,
         },
     ),
 ]
@@ -172,6 +176,7 @@ MONITORING_INTERRUPTED_SCENARIOS = [
             "distance": pytest.approx(1.253),
             "activityId": 90019,
             "distanceUnit": "Kilometer",
+            "manualCalories": 0,
         },
     ),
     MonitorScenario(
@@ -212,6 +217,7 @@ MONITORING_INTERRUPTED_SCENARIOS = [
             "distance": pytest.approx(1.253),
             "activityId": 90019,
             "distanceUnit": "Kilometer",
+            "manualCalories": 0,
         },
     ),
     MonitorScenario(
