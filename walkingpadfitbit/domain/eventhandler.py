@@ -1,6 +1,7 @@
 import asyncio
 import datetime as dt
 import logging
+import sys
 
 from walkingpadfitbit.domain.display.base import BaseDisplay
 from walkingpadfitbit.domain.entities.activity import Activity
@@ -34,6 +35,7 @@ class TreadmillEventHandler:
     def _on_walk(self, event: TreadmillEvent):
         self._last_walk_event = event
         print(self.display.to_text(event))
+        sys.stdout.flush()
 
     def _on_stop(self):
         last_walk_event = self._last_walk_event
