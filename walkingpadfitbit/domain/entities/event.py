@@ -6,8 +6,10 @@ from typing import Union
 class TreadmillWalkEvent:
     time_s: int
     dist_km: float
+    speed_kph: float
 
 
-TreadmillStopEvent = object()
+class TreadmillStopEvent: ...
+
 
 TreadmillEvent = Union[TreadmillStopEvent, TreadmillWalkEvent]

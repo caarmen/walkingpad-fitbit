@@ -1,11 +1,14 @@
 import argparse
 from typing import Protocol
 
+from walkingpadfitbit.domain.display.factory import DisplayMode
+
 
 class CliArgs(Protocol):
     device_name: str
     monitor_duration_s: float
     poll_interval_s: float
+    display_mode: DisplayMode
 
 
 def parse_args() -> CliArgs:
@@ -30,6 +33,14 @@ def parse_args() -> CliArgs:
         type=float,
         default=1.0,
         dest="poll_interval_s",
+    )
+    arg_parser.add_argument(
+        "-m",
+        "--display-mode",
+        help="Display mode",
+        type=DisplayMode,
+        choices=DisplayMode,
+        default=DisplayMode.RICH_TEXT,
     )
 
     return arg_parser.parse_args()

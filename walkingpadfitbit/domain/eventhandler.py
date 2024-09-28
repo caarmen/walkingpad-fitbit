@@ -1,7 +1,10 @@
 import asyncio
 import datetime as dt
 import logging
+import sys
+from io import TextIOBase
 
+from walkingpadfitbit.domain.display.base import BaseDisplay
 from walkingpadfitbit.domain.entities.activity import Activity
 from walkingpadfitbit.domain.entities.event import (
     TreadmillEvent,
@@ -17,9 +20,13 @@ class TreadmillEventHandler:
     def __init__(
         self,
         remote_activity_repository: RemoteActivityRepository,
+        display: BaseDisplay,
+        event_output: TextIOBase = sys.stdout,
     ):
         self._remote_activity_repository = remote_activity_repository
+        self.display = display
         self._last_walk_event: TreadmillWalkEvent = None
+        self.event_output = event_output
 
     def handle_treadmill_event(self, event: TreadmillEvent):
         logger.debug(f"handle_treadmill_event {event}")
@@ -29,12 +36,14 @@ class TreadmillEventHandler:
             self._on_walk(event)
 
     def _on_walk(self, event: TreadmillEvent):
+        self._print_event_output(event_text=self.display.walk_event_to_text(event))
         self._last_walk_event = event
 
     def _on_stop(self):
         last_walk_event = self._last_walk_event
         if last_walk_event:
             logger.info("Walk stopped")
+            self._print_event_output(event_text=self.display.stop_event_to_text())
             now_utc = dt.datetime.now(tz=dt.timezone.utc)
             now_localtime = now_utc.astimezone()
             activity = Activity(
@@ -47,6 +56,13 @@ class TreadmillEventHandler:
                 name="post_activity",
             )
             self._last_walk_event = None
+
+    def _print_event_output(self, event_text: str):
+        print(
+            event_text,
+            file=self.event_output,
+            flush=True,
+        )
 
     async def flush(self):
         tasks = [t for t in asyncio.all_tasks() if t.get_name() == "post_activity"]

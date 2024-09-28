@@ -1,7 +1,7 @@
 import pytest
 
+from tests.fakes.builtins.fakestdout import FakeStdout
 from walkingpadfitbit.auth.client import Client
-from walkingpadfitbit.domain.eventhandler import TreadmillEventHandler
 from walkingpadfitbit.domain.remoterepository import RemoteActivityRepository
 from walkingpadfitbit.interfaceadapters.fitbit.remoterepository import (
     FitbitRemoteActivityRepository,
@@ -16,7 +16,5 @@ def remote_activity_repository(
 
 
 @pytest.fixture
-def treadmill_event_handler(
-    remote_activity_repository: RemoteActivityRepository,
-) -> TreadmillEventHandler:
-    return TreadmillEventHandler(remote_activity_repository)
+def event_output() -> FakeStdout:
+    return FakeStdout()
