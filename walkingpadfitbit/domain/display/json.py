@@ -16,3 +16,12 @@ class JsonDisplay(BaseDisplay):
                 "speed_kph": round(event.speed_kph, 1),
             }
         )
+
+    def stop_event_to_text(self) -> str:
+        return json.dumps(
+            {
+                "distance_m": None,
+                "duration_s": None,
+                "speed_kph": None,
+            }
+        )

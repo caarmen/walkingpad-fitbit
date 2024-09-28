@@ -10,3 +10,7 @@ class BaseDisplay(ABC):
         event: TreadmillWalkEvent,
     ) -> str:
         raise NotImplementedError
+
+    @abstractmethod
+    def stop_event_to_text(self) -> str:
+        raise NotImplementedError

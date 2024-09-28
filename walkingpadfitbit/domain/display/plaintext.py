@@ -9,3 +9,6 @@ class PlainTextDisplay(BaseDisplay):
         event: TreadmillWalkEvent,
     ) -> str:
         return f"Distance: {event.dist_km:.2f} km. Duration: {friendly_duration(event.time_s)}. Speed: {event.speed_kph:.1f} km/h."
+
+    def stop_event_to_text(self) -> str:
+        return "Distance: --. Duration: --. Speed: --."

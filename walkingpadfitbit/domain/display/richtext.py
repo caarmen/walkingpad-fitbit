@@ -11,3 +11,8 @@ class RichTextDisplay(BaseDisplay):
         return f"""{chr(27)}[2J{chr(27)}[HDistance: {event.dist_km:.2f} km
 Duration: {friendly_duration(event.time_s)}
 Speed: {event.speed_kph:.1f} km/h"""
+
+    def stop_event_to_text(self) -> str:
+        return f"""{chr(27)}[2J{chr(27)}[HDistance: --
+Duration: --
+Speed: --"""

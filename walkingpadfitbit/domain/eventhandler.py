@@ -43,6 +43,7 @@ class TreadmillEventHandler:
         last_walk_event = self._last_walk_event
         if last_walk_event:
             logger.info("Walk stopped")
+            self._print_event_output(event_text=self.display.stop_event_to_text())
             now_utc = dt.datetime.now(tz=dt.timezone.utc)
             now_localtime = now_utc.astimezone()
             activity = Activity(
