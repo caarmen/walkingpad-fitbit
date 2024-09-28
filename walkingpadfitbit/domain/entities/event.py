@@ -8,6 +8,7 @@ class TreadmillWalkEvent:
     dist_km: float
 
 
-TreadmillStopEvent = object()
+class TreadmillStopEvent: ...
+
 
 TreadmillEvent = Union[TreadmillStopEvent, TreadmillWalkEvent]
