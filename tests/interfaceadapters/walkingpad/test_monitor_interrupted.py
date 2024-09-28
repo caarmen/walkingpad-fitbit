@@ -9,6 +9,7 @@ from zoneinfo import ZoneInfo
 import pytest
 from bleak.exc import BleakDeviceNotFoundError
 
+from tests.fakes.builtins.fakestdout import FakeStdout
 from tests.fakes.ph4_walkingpad.config import configure_fake_walkingpad
 from tests.fakes.ph4_walkingpad.fakecontroller import (
     ControllerScenario,
@@ -16,8 +17,10 @@ from tests.fakes.ph4_walkingpad.fakecontroller import (
 )
 from tests.fakes.ph4_walkingpad.fakescanner import ScannerScenario
 from tests.fixtures.authlib import AuthLibMocks, AuthLibScenario
+from walkingpadfitbit.domain.display.factory import DisplayMode, get_display
 from walkingpadfitbit.domain.eventhandler import TreadmillEventHandler
 from walkingpadfitbit.domain.eventhandler import dt as datetime_to_freeze
+from walkingpadfitbit.domain.remoterepository import RemoteActivityRepository
 from walkingpadfitbit.interfaceadapters.walkingpad.monitor import monitor
 
 
@@ -25,6 +28,7 @@ from walkingpadfitbit.interfaceadapters.walkingpad.monitor import monitor
 class MonitorScenario:
     id: str
     fake_walking_pad_cur_statuses: list[FakeWalkingPadCurStatus]
+    expected_output_text: dict[DisplayMode, str]
     expected_post_call_count: int
     expected_post_query_params: dict[str, int | float | str] | None = None
 
@@ -56,6 +60,21 @@ MONITORING_INTERRUPTED_SCENARIOS = [
             "distanceUnit": "Kilometer",
             "manualCalories": 0,
         },
+        expected_output_text={
+            DisplayMode.PLAIN_TEXT: """Distance: 1.25 km. Duration: 20m. Speed: 2.0 km/h.
+Distance: --. Duration: --. Speed: --.
+""",
+            DisplayMode.JSON: """{"distance_m": 1253, "duration_s": 1200, "speed_kph": 2.0}
+{"distance_m": null, "duration_s": null, "speed_kph": null}
+""",
+            DisplayMode.RICH_TEXT: f"""{chr(27)}[2J{chr(27)}[HDistance: 1.25 km
+Duration: 20m
+Speed: 2.0 km/h
+{chr(27)}[2J{chr(27)}[HDistance: --
+Duration: --
+Speed: --
+""",
+        },
     ),
     MonitorScenario(
         id="two walk events",
@@ -74,6 +93,21 @@ MONITORING_INTERRUPTED_SCENARIOS = [
             ),
         ],
         expected_post_call_count=0,
+        expected_output_text={
+            DisplayMode.PLAIN_TEXT: """Distance: 1.25 km. Duration: 20m. Speed: 2.0 km/h.
+Distance: 1.25 km. Duration: 20m. Speed: 2.1 km/h.
+""",
+            DisplayMode.JSON: """{"distance_m": 1253, "duration_s": 1200, "speed_kph": 2.0}
+{"distance_m": 1253, "duration_s": 1201, "speed_kph": 2.1}
+""",
+            DisplayMode.RICH_TEXT: f"""{chr(27)}[2J{chr(27)}[HDistance: 1.25 km
+Duration: 20m
+Speed: 2.0 km/h
+{chr(27)}[2J{chr(27)}[HDistance: 1.25 km
+Duration: 20m
+Speed: 2.1 km/h
+""",
+        },
     ),
     MonitorScenario(
         id="one walk, one unknown",
@@ -101,6 +135,21 @@ MONITORING_INTERRUPTED_SCENARIOS = [
             "distanceUnit": "Kilometer",
             "manualCalories": 0,
         },
+        expected_output_text={
+            DisplayMode.PLAIN_TEXT: """Distance: 1.25 km. Duration: 20m. Speed: 2.0 km/h.
+Distance: --. Duration: --. Speed: --.
+""",
+            DisplayMode.JSON: """{"distance_m": 1253, "duration_s": 1201, "speed_kph": 2.0}
+{"distance_m": null, "duration_s": null, "speed_kph": null}
+""",
+            DisplayMode.RICH_TEXT: f"""{chr(27)}[2J{chr(27)}[HDistance: 1.25 km
+Duration: 20m
+Speed: 2.0 km/h
+{chr(27)}[2J{chr(27)}[HDistance: --
+Duration: --
+Speed: --
+""",
+        },
     ),
     MonitorScenario(
         id="one stop, one walk",
@@ -119,11 +168,29 @@ MONITORING_INTERRUPTED_SCENARIOS = [
             ),
         ],
         expected_post_call_count=0,
+        expected_output_text={
+            DisplayMode.PLAIN_TEXT: """Distance: 1.25 km. Duration: 20m. Speed: 2.0 km/h.
+""",
+            DisplayMode.JSON: """{"distance_m": 1253, "duration_s": 1201, "speed_kph": 2.0}
+""",
+            DisplayMode.RICH_TEXT: f"""{chr(27)}[2J{chr(27)}[HDistance: 1.25 km
+Duration: 20m
+Speed: 2.0 km/h
+""",
+        },
     ),
 ]
 
 
 @pytest.mark.asyncio
+@pytest.mark.parametrize(
+    argnames="display_mode",
+    argvalues=[
+        DisplayMode.PLAIN_TEXT,
+        DisplayMode.JSON,
+        DisplayMode.RICH_TEXT,
+    ],
+)
 @pytest.mark.parametrize(
     ids=["no exception", "reconnect timeout", "bleak exception", "unexpected error"],
     argnames="controller_run_exceptions",
@@ -149,7 +216,9 @@ MONITORING_INTERRUPTED_SCENARIOS = [
 )
 async def test_monitor_monitoring_interrupted(
     monkeypatch: pytest.MonkeyPatch,
-    treadmill_event_handler: TreadmillEventHandler,
+    display_mode: DisplayMode,
+    event_output: FakeStdout,
+    remote_activity_repository: RemoteActivityRepository,
     freeze_time: Callable[
         [pytest.MonkeyPatch, ModuleType, tuple[Any], dt.timezone], None
     ],
@@ -162,7 +231,13 @@ async def test_monitor_monitoring_interrupted(
     Given a scenario where the walking pad emits certain data
     When we monitor the walking pad data until an interrupt signal is sent
     Then we send the expected api calls to Fitbit to log (or not) the activity.
+    And we output the expected text to the screen.
     """
+    treadmill_event_handler = TreadmillEventHandler(
+        remote_activity_repository=remote_activity_repository,
+        display=get_display(display_mode),
+        event_output=event_output,
+    )
     with monkeypatch.context() as mp:
 
         # Given a scenario where the walking pad emits certain data
@@ -209,3 +284,9 @@ async def test_monitor_monitoring_interrupted(
         if monitor_scenario.expected_post_call_count:
             actual_query_params = authlib_mocks.post.call_args[1]["params"]
             assert actual_query_params == monitor_scenario.expected_post_query_params
+
+        # And we output the expected text to the screen.
+        actual_lines_written = event_output.lines_written
+        assert (
+            actual_lines_written == monitor_scenario.expected_output_text[display_mode]
+        )
