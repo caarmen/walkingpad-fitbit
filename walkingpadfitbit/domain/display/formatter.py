@@ -1,3 +1,6 @@
+from walkingpadfitbit.domain.entities.event import TreadmillEvent
+
+
 def friendly_duration(duration_s: int) -> str:
     """
     Return a friendly display of the duration.
@@ -15,3 +18,15 @@ def friendly_duration(duration_s: int) -> str:
         return f"{minutes}m"
 
     return f"{hours}h {minutes}m"
+
+
+def format_duration(event: TreadmillEvent) -> str:
+    return f"Duration: {friendly_duration(event.time_s)}"
+
+
+def format_distance(event: TreadmillEvent) -> str:
+    return f"Distance: {event.dist_km:.2f} km"
+
+
+def format_speed(event: TreadmillEvent) -> str:
+    return f"Speed: {event.speed_kph:.1f} km/h"
