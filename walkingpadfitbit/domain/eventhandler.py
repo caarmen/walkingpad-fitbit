@@ -24,9 +24,9 @@ class TreadmillEventHandler:
         event_output: TextIOBase = sys.stdout,
     ):
         self._remote_activity_repository = remote_activity_repository
-        self.display = display
+        self._display = display
         self._last_walk_event: TreadmillWalkEvent = None
-        self.event_output = event_output
+        self._event_output = event_output
 
     def handle_treadmill_event(self, event: TreadmillEvent):
         logger.debug(f"handle_treadmill_event {event}")
@@ -36,14 +36,14 @@ class TreadmillEventHandler:
             self._on_walk(event)
 
     def _on_walk(self, event: TreadmillEvent):
-        self._print_event_output(event_text=self.display.walk_event_to_text(event))
+        self._print_event_output(event_text=self._display.walk_event_to_text(event))
         self._last_walk_event = event
 
     def _on_stop(self):
         last_walk_event = self._last_walk_event
         if last_walk_event:
             logger.info("Walk stopped")
-            self._print_event_output(event_text=self.display.stop_event_to_text())
+            self._print_event_output(event_text=self._display.stop_event_to_text())
             now_utc = dt.datetime.now(tz=dt.timezone.utc)
             now_localtime = now_utc.astimezone()
             activity = Activity(
@@ -60,7 +60,7 @@ class TreadmillEventHandler:
     def _print_event_output(self, event_text: str):
         print(
             event_text,
-            file=self.event_output,
+            file=self._event_output,
             flush=True,
         )
 
