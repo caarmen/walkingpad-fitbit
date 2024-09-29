@@ -55,14 +55,29 @@ class TreadmillEventHandler:
         asyncio.create_task(self._fetch_daily_summary())
 
     def _on_walk(self, event: TreadmillEvent):
-        self._print_event_output(event_text=self._display.walk_event_to_text(event))
+        if not self._last_walk_event:
+            logger.info("Walk started")
+            self._schedule_fetch_daily_summary()
+
+        self._print_event_output(
+            event_text=self._display.walk_event_to_text(
+                event=event,
+                daily_summary=self._daily_summary,
+            )
+        )
+
         self._last_walk_event = event
 
     def _on_stop(self):
         last_walk_event = self._last_walk_event
         if last_walk_event:
             logger.info("Walk stopped")
-            self._print_event_output(event_text=self._display.stop_event_to_text())
+            self._print_event_output(
+                event_text=self._display.stop_event_to_text(
+                    last_event=last_walk_event,
+                    daily_summary=self._daily_summary,
+                )
+            )
             now_utc = dt.datetime.now(tz=dt.timezone.utc)
             now_localtime = now_utc.astimezone()
             activity = Activity(
@@ -71,10 +86,17 @@ class TreadmillEventHandler:
                 distance_km=last_walk_event.dist_km,
             )
             asyncio.create_task(
-                self._remote_activity_repository.post_activity(activity),
-                name="post_activity",
+                self._on_stop_remote_sync(activity),
+                name="remote_sync",
             )
             self._last_walk_event = None
+
+    async def _on_stop_remote_sync(
+        self,
+        activity: Activity,
+    ):
+        await self._remote_activity_repository.post_activity(activity)
+        await self._fetch_daily_summary()
 
     def _print_event_output(self, event_text: str):
         print(
@@ -84,5 +106,5 @@ class TreadmillEventHandler:
         )
 
     async def flush(self):
-        tasks = [t for t in asyncio.all_tasks() if t.get_name() == "post_activity"]
+        tasks = [t for t in asyncio.all_tasks() if t.get_name() == "remote_sync"]
         await asyncio.gather(*tasks)

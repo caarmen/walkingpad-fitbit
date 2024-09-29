@@ -1,3 +1,4 @@
+from walkingpadfitbit.domain.entities.dailysummary import DailySummary
 from walkingpadfitbit.domain.entities.event import TreadmillEvent
 
 
@@ -30,3 +31,21 @@ def format_distance(event: TreadmillEvent) -> str:
 
 def format_speed(event: TreadmillEvent) -> str:
     return f"Speed: {event.speed_kph:.1f} km/h"
+
+
+def format_total_duration(
+    event: TreadmillEvent,
+    daily_summary: DailySummary | None,
+) -> str:
+    if not daily_summary:
+        return "Total duration: --"
+    return f"Total duration: {friendly_duration(event.time_s + (daily_summary.total_duration_ms // 1000))}"
+
+
+def format_total_distance(
+    event: TreadmillEvent,
+    daily_summary: DailySummary | None,
+) -> str:
+    if not daily_summary:
+        return "Total distance: --"
+    return f"Total distance: {(event.dist_km + daily_summary.total_distance_km):.2f} km"
