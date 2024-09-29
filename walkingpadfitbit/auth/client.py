@@ -16,6 +16,11 @@ class Client(Protocol):
         params: dict[str, Any],
     ) -> Response: ...
 
+    async def get(
+        url: str,
+        params: dict[str, Any],
+    ) -> Response: ...
+
 
 def get_client(
     client_id: str,
