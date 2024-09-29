@@ -46,5 +46,4 @@ class FakeController:
             )
             self.ask_stats_iterations += 1
 
-    async def disconnect(self):
-        pass
+    async def disconnect(self): ...

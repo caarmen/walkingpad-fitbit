@@ -8,8 +8,7 @@ from authlib.oauth2.auth import OAuth2Token
 from walkingpadfitbit.auth import storage
 
 
-class AuthError(Exception):
-    pass
+class AuthError(Exception): ...
 
 
 async def login(
