@@ -13,6 +13,10 @@ class AuthLibScenario:
     fake_authorization_url: str = "https://fake.fitbit.com/authorize?foo=bar"
     fake_callback_url: str = "https://myapp.com/oauth/fitbit/?abc=def"
     fake_oauth_token: dict[str, Any] | None = None
+    fake_get_response: Response = Response(
+        status_code=200,
+        json={},
+    )
 
 
 @dataclass
@@ -20,6 +24,7 @@ class AuthLibMocks:
     create_authorization_url: Mock
     fetch_token: Mock
     post: Mock
+    get: Mock
 
 
 @pytest.fixture
@@ -79,10 +84,18 @@ def fake_oauth_client() -> (
 
         mock_post = create_autospec(AsyncOAuth2Client.post, side_effect=fake_post)
         mp.setattr(AsyncOAuth2Client, "post", mock_post)
+
+        # Fake the get() api
+        async def fake_get(self, url, params):
+            return scenario.fake_get_response
+
+        mock_get = create_autospec(AsyncOAuth2Client.get, side_effect=fake_get)
+        mp.setattr(AsyncOAuth2Client, "get", mock_get)
         return AuthLibMocks(
             create_authorization_url=mock_create_authorization_url,
             fetch_token=mock_fetch_token,
             post=mock_post,
+            get=mock_get,
         )
 
     return create_fake_oauth_client

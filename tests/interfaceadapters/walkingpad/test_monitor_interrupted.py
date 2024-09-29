@@ -8,6 +8,7 @@ from zoneinfo import ZoneInfo
 
 import pytest
 from bleak.exc import BleakDeviceNotFoundError
+from httpx import Response
 
 from tests.fakes.builtins.fakestdout import FakeStdout
 from tests.fakes.ph4_walkingpad.config import configure_fake_walkingpad
@@ -29,9 +30,12 @@ class MonitorScenario:
     id: str
     fake_walking_pad_cur_statuses: list[FakeWalkingPadCurStatus]
     expected_output_text: dict[DisplayMode, str]
+    expected_get_call_count: int
     expected_post_call_count: int
     expected_post_query_params: dict[str, int | float | str] | None = None
 
+
+DAILY_ACTIVITY_RESPONSE = {"activities": []}
 
 MONITORING_INTERRUPTED_SCENARIOS = [
     MonitorScenario(
@@ -50,6 +54,7 @@ MONITORING_INTERRUPTED_SCENARIOS = [
                 speed=0,
             ),
         ],
+        expected_get_call_count=3,
         expected_post_call_count=1,
         expected_post_query_params={
             "date": "2038-04-01",
@@ -61,18 +66,22 @@ MONITORING_INTERRUPTED_SCENARIOS = [
             "manualCalories": 0,
         },
         expected_output_text={
-            DisplayMode.PLAIN_TEXT: """Distance: 1.25 km. Duration: 20m. Speed: 2.0 km/h.
-Distance: --. Duration: --. Speed: --.
+            DisplayMode.PLAIN_TEXT: """Distance: 1.25 km. Duration: 20m. Speed: 2.0 km/h. Total distance: 1.25 km. Total duration: 20m.
+Distance: --. Duration: --. Speed: --. Total distance: 1.25 km. Total duration: 20m.
 """,
-            DisplayMode.JSON: """{"distance_m": 1253, "duration_s": 1200, "speed_kph": 2.0}
-{"distance_m": null, "duration_s": null, "speed_kph": null}
+            DisplayMode.JSON: """{"distance_m": 1253, "duration_s": 1200, "speed_kph": 2.0, "total_distance_m": 1253, "total_duration_s": 1200}
+{"distance_m": null, "duration_s": null, "speed_kph": null, "total_distance_m": 1253, "total_duration_s": 1200}
 """,
             DisplayMode.RICH_TEXT: f"""{chr(27)}[2J{chr(27)}[HDistance: 1.25 km
 Duration: 20m
 Speed: 2.0 km/h
+Total distance: 1.25 km
+Total duration: 20m
 {chr(27)}[2J{chr(27)}[HDistance: --
 Duration: --
 Speed: --
+Total distance: 1.25 km
+Total duration: 20m
 """,
         },
     ),
@@ -92,20 +101,25 @@ Speed: --
                 speed=21,
             ),
         ],
+        expected_get_call_count=2,
         expected_post_call_count=0,
         expected_output_text={
-            DisplayMode.PLAIN_TEXT: """Distance: 1.25 km. Duration: 20m. Speed: 2.0 km/h.
-Distance: 1.25 km. Duration: 20m. Speed: 2.1 km/h.
+            DisplayMode.PLAIN_TEXT: """Distance: 1.25 km. Duration: 20m. Speed: 2.0 km/h. Total distance: 1.25 km. Total duration: 20m.
+Distance: 1.25 km. Duration: 20m. Speed: 2.1 km/h. Total distance: 1.25 km. Total duration: 20m.
 """,
-            DisplayMode.JSON: """{"distance_m": 1253, "duration_s": 1200, "speed_kph": 2.0}
-{"distance_m": 1253, "duration_s": 1201, "speed_kph": 2.1}
+            DisplayMode.JSON: """{"distance_m": 1253, "duration_s": 1200, "speed_kph": 2.0, "total_distance_m": 1253, "total_duration_s": 1200}
+{"distance_m": 1253, "duration_s": 1201, "speed_kph": 2.1, "total_distance_m": 1253, "total_duration_s": 1201}
 """,
             DisplayMode.RICH_TEXT: f"""{chr(27)}[2J{chr(27)}[HDistance: 1.25 km
 Duration: 20m
 Speed: 2.0 km/h
+Total distance: 1.25 km
+Total duration: 20m
 {chr(27)}[2J{chr(27)}[HDistance: 1.25 km
 Duration: 20m
 Speed: 2.1 km/h
+Total distance: 1.25 km
+Total duration: 20m
 """,
         },
     ),
@@ -125,6 +139,7 @@ Speed: 2.1 km/h
                 speed=0,
             ),
         ],
+        expected_get_call_count=3,
         expected_post_call_count=1,
         expected_post_query_params={
             "date": "2038-04-01",
@@ -136,18 +151,22 @@ Speed: 2.1 km/h
             "manualCalories": 0,
         },
         expected_output_text={
-            DisplayMode.PLAIN_TEXT: """Distance: 1.25 km. Duration: 20m. Speed: 2.0 km/h.
-Distance: --. Duration: --. Speed: --.
+            DisplayMode.PLAIN_TEXT: """Distance: 1.25 km. Duration: 20m. Speed: 2.0 km/h. Total distance: 1.25 km. Total duration: 20m.
+Distance: --. Duration: --. Speed: --. Total distance: 1.25 km. Total duration: 20m.
 """,
-            DisplayMode.JSON: """{"distance_m": 1253, "duration_s": 1201, "speed_kph": 2.0}
-{"distance_m": null, "duration_s": null, "speed_kph": null}
+            DisplayMode.JSON: """{"distance_m": 1253, "duration_s": 1201, "speed_kph": 2.0, "total_distance_m": 1253, "total_duration_s": 1201}
+{"distance_m": null, "duration_s": null, "speed_kph": null, "total_distance_m": 1253, "total_duration_s": 1201}
 """,
             DisplayMode.RICH_TEXT: f"""{chr(27)}[2J{chr(27)}[HDistance: 1.25 km
 Duration: 20m
 Speed: 2.0 km/h
+Total distance: 1.25 km
+Total duration: 20m
 {chr(27)}[2J{chr(27)}[HDistance: --
 Duration: --
 Speed: --
+Total distance: 1.25 km
+Total duration: 20m
 """,
         },
     ),
@@ -167,15 +186,18 @@ Speed: --
                 speed=20,
             ),
         ],
+        expected_get_call_count=2,
         expected_post_call_count=0,
         expected_output_text={
-            DisplayMode.PLAIN_TEXT: """Distance: 1.25 km. Duration: 20m. Speed: 2.0 km/h.
+            DisplayMode.PLAIN_TEXT: """Distance: 1.25 km. Duration: 20m. Speed: 2.0 km/h. Total distance: 1.25 km. Total duration: 20m.
 """,
-            DisplayMode.JSON: """{"distance_m": 1253, "duration_s": 1201, "speed_kph": 2.0}
+            DisplayMode.JSON: """{"distance_m": 1253, "duration_s": 1201, "speed_kph": 2.0, "total_distance_m": 1253, "total_duration_s": 1201}
 """,
             DisplayMode.RICH_TEXT: f"""{chr(27)}[2J{chr(27)}[HDistance: 1.25 km
 Duration: 20m
 Speed: 2.0 km/h
+Total distance: 1.25 km
+Total duration: 20m
 """,
         },
     ),
@@ -230,14 +252,10 @@ async def test_monitor_monitoring_interrupted(
     """
     Given a scenario where the walking pad emits certain data
     When we monitor the walking pad data until an interrupt signal is sent
-    Then we send the expected api calls to Fitbit to log (or not) the activity.
+    Then we send the expected api calls to Fitbit to retrieve the daily activity summary
+    And we send the expected api calls to Fitbit to log (or not) the activity.
     And we output the expected text to the screen.
     """
-    treadmill_event_handler = TreadmillEventHandler(
-        remote_activity_repository=remote_activity_repository,
-        display=get_display(display_mode),
-        event_output=event_output,
-    )
     with monkeypatch.context() as mp:
 
         # Given a scenario where the walking pad emits certain data
@@ -247,7 +265,15 @@ async def test_monitor_monitoring_interrupted(
             frozen_datetime_args=(2038, 4, 1, 11, 33, 44, 0),
             local_timezone=ZoneInfo("America/Los_Angeles"),
         )
-        authlib_mocks: AuthLibMocks = fake_oauth_client(mp, AuthLibScenario())
+        authlib_mocks: AuthLibMocks = fake_oauth_client(
+            mp,
+            AuthLibScenario(
+                fake_get_response=Response(
+                    status_code=200,
+                    json=DAILY_ACTIVITY_RESPONSE,
+                )
+            ),
+        )
         configure_fake_walkingpad(
             mp,
             ScannerScenario(
@@ -258,6 +284,12 @@ async def test_monitor_monitoring_interrupted(
                 is_connected_values=is_connected_values,
                 run_exceptions=controller_run_exceptions,
             ),
+        )
+
+        treadmill_event_handler = TreadmillEventHandler(
+            remote_activity_repository=remote_activity_repository,
+            display=get_display(display_mode),
+            event_output=event_output,
         )
 
         async def send_interrupt_signal():
@@ -277,7 +309,10 @@ async def test_monitor_monitoring_interrupted(
             )
             tg.create_task(send_interrupt_signal())
 
-        # Then we send the expected api calls to Fitbit to log (or not) the activity.
+        # Then we send the expected api calls to Fitbit to retrieve the daily activity summary
+        assert authlib_mocks.get.call_count == monitor_scenario.expected_get_call_count
+
+        # And we send the expected api calls to Fitbit to log (or not) the activity.
         assert (
             authlib_mocks.post.call_count == monitor_scenario.expected_post_call_count
         )

@@ -1,6 +1,6 @@
 import pytest
 
-from walkingpadfitbit.domain.display.duration import friendly_duration
+from walkingpadfitbit.domain.display.formatter import friendly_duration
 
 
 @pytest.mark.parametrize(

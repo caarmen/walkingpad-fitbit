@@ -1,3 +1,4 @@
+import asyncio
 import datetime as dt
 from dataclasses import dataclass
 from types import ModuleType
@@ -6,6 +7,7 @@ from zoneinfo import ZoneInfo
 
 import pytest
 from bleak.exc import BleakDeviceNotFoundError
+from httpx import Response
 
 from tests.fakes.builtins.fakestdout import FakeStdout
 from tests.fakes.ph4_walkingpad.config import configure_fake_walkingpad
@@ -26,9 +28,29 @@ from walkingpadfitbit.interfaceadapters.walkingpad.monitor import monitor
 class MonitorScenario:
     id: str
     fake_walking_pad_cur_statuses: list[FakeWalkingPadCurStatus]
+    fake_fitbit_daily_activity_response: Response
     expected_output_text: dict[DisplayMode, str]
+    expected_get_call_count: int
     expected_post_call_count: int
     expected_post_query_params: dict[str, int | float | str] | None = None
+
+
+FITBIT_NONZERO_DAILY_ACTIVITY_RESPONSE = Response(
+    status_code=200,
+    json={
+        "activities": [
+            {
+                "activityTypeId": 90019,
+                "distanceUnit": "Kilometer",
+                "distance": 10.1,
+                "duration": 3600 * 2 * 1000,
+            },
+        ]
+    },
+)
+FITBIT_ERROR_DAILY_ACTIVITY_RESPONSE = Response(
+    status_code=500,
+)
 
 
 MONITOR_DURATION_ELAPSED_SCENARIOS = [
@@ -48,6 +70,8 @@ MONITOR_DURATION_ELAPSED_SCENARIOS = [
                 speed=0,
             ),
         ],
+        fake_fitbit_daily_activity_response=FITBIT_NONZERO_DAILY_ACTIVITY_RESPONSE,
+        expected_get_call_count=3,
         expected_post_call_count=1,
         expected_post_query_params={
             "date": "2038-04-01",
@@ -59,24 +83,78 @@ MONITOR_DURATION_ELAPSED_SCENARIOS = [
             "manualCalories": 0,
         },
         expected_output_text={
-            DisplayMode.PLAIN_TEXT: """Distance: 1.25 km. Duration: 20m. Speed: 2.0 km/h.
-Distance: --. Duration: --. Speed: --.
+            DisplayMode.PLAIN_TEXT: """Distance: 1.25 km. Duration: 20m. Speed: 2.0 km/h. Total distance: 11.35 km. Total duration: 2h 20m.
+Distance: --. Duration: --. Speed: --. Total distance: 11.35 km. Total duration: 2h 20m.
 """,
-            DisplayMode.JSON: """{"distance_m": 1253, "duration_s": 1200, "speed_kph": 2.0}
-{"distance_m": null, "duration_s": null, "speed_kph": null}
+            DisplayMode.JSON: """{"distance_m": 1253, "duration_s": 1200, "speed_kph": 2.0, "total_distance_m": 11353, "total_duration_s": 8400}
+{"distance_m": null, "duration_s": null, "speed_kph": null, "total_distance_m": 11353, "total_duration_s": 8400}
 """,
             DisplayMode.RICH_TEXT: f"""{chr(27)}[2J{chr(27)}[HDistance: 1.25 km
 Duration: 20m
 Speed: 2.0 km/h
+Total distance: 11.35 km
+Total duration: 2h 20m
 {chr(27)}[2J{chr(27)}[HDistance: --
 Duration: --
 Speed: --
+Total distance: 11.35 km
+Total duration: 2h 20m
+""",
+        },
+    ),
+    MonitorScenario(
+        id="one walk, one stop, fitbit daily activity error",
+        fake_walking_pad_cur_statuses=[
+            FakeWalkingPadCurStatus(
+                belt_state=1,
+                dist=125.3,
+                time=1200,
+                speed=20,
+            ),
+            FakeWalkingPadCurStatus(
+                belt_state=0,
+                dist=0,
+                time=0,
+                speed=0,
+            ),
+        ],
+        fake_fitbit_daily_activity_response=FITBIT_ERROR_DAILY_ACTIVITY_RESPONSE,
+        expected_get_call_count=3,
+        expected_post_call_count=1,
+        expected_post_query_params={
+            "date": "2038-04-01",
+            "startTime": "04:13",
+            "durationMillis": 1200000,
+            "distance": pytest.approx(1.253),
+            "activityId": 90019,
+            "distanceUnit": "Kilometer",
+            "manualCalories": 0,
+        },
+        expected_output_text={
+            DisplayMode.PLAIN_TEXT: """Distance: 1.25 km. Duration: 20m. Speed: 2.0 km/h. Total distance: --. Total duration: --.
+Distance: --. Duration: --. Speed: --. Total distance: --. Total duration: --.
+""",
+            DisplayMode.JSON: """{"distance_m": 1253, "duration_s": 1200, "speed_kph": 2.0, "total_distance_m": null, "total_duration_s": null}
+{"distance_m": null, "duration_s": null, "speed_kph": null, "total_distance_m": null, "total_duration_s": null}
+""",
+            DisplayMode.RICH_TEXT: f"""{chr(27)}[2J{chr(27)}[HDistance: 1.25 km
+Duration: 20m
+Speed: 2.0 km/h
+Total distance: --
+Total duration: --
+{chr(27)}[2J{chr(27)}[HDistance: --
+Duration: --
+Speed: --
+Total distance: --
+Total duration: --
 """,
         },
     ),
     MonitorScenario(
         id="no events",
         fake_walking_pad_cur_statuses=[],
+        fake_fitbit_daily_activity_response=FITBIT_NONZERO_DAILY_ACTIVITY_RESPONSE,
+        expected_get_call_count=1,
         expected_post_call_count=0,
         expected_output_text={
             DisplayMode.PLAIN_TEXT: "",
@@ -100,6 +178,8 @@ Speed: --
                 speed=21,
             ),
         ],
+        fake_fitbit_daily_activity_response=FITBIT_NONZERO_DAILY_ACTIVITY_RESPONSE,
+        expected_get_call_count=3,
         expected_post_call_count=1,
         expected_post_query_params={
             "date": "2038-04-01",
@@ -111,23 +191,29 @@ Speed: --
             "manualCalories": 0,
         },
         expected_output_text={
-            DisplayMode.PLAIN_TEXT: """Distance: 1.25 km. Duration: 20m. Speed: 2.0 km/h.
-Distance: 1.25 km. Duration: 20m. Speed: 2.1 km/h.
-Distance: --. Duration: --. Speed: --.
+            DisplayMode.PLAIN_TEXT: """Distance: 1.25 km. Duration: 20m. Speed: 2.0 km/h. Total distance: 11.35 km. Total duration: 2h 20m.
+Distance: 1.25 km. Duration: 20m. Speed: 2.1 km/h. Total distance: 11.35 km. Total duration: 2h 20m.
+Distance: --. Duration: --. Speed: --. Total distance: 11.35 km. Total duration: 2h 20m.
 """,
-            DisplayMode.JSON: """{"distance_m": 1253, "duration_s": 1200, "speed_kph": 2.0}
-{"distance_m": 1253, "duration_s": 1201, "speed_kph": 2.1}
-{"distance_m": null, "duration_s": null, "speed_kph": null}
+            DisplayMode.JSON: """{"distance_m": 1253, "duration_s": 1200, "speed_kph": 2.0, "total_distance_m": 11353, "total_duration_s": 8400}
+{"distance_m": 1253, "duration_s": 1201, "speed_kph": 2.1, "total_distance_m": 11353, "total_duration_s": 8401}
+{"distance_m": null, "duration_s": null, "speed_kph": null, "total_distance_m": 11353, "total_duration_s": 8401}
 """,
             DisplayMode.RICH_TEXT: f"""{chr(27)}[2J{chr(27)}[HDistance: 1.25 km
 Duration: 20m
 Speed: 2.0 km/h
+Total distance: 11.35 km
+Total duration: 2h 20m
 {chr(27)}[2J{chr(27)}[HDistance: 1.25 km
 Duration: 20m
 Speed: 2.1 km/h
+Total distance: 11.35 km
+Total duration: 2h 20m
 {chr(27)}[2J{chr(27)}[HDistance: --
 Duration: --
 Speed: --
+Total distance: 11.35 km
+Total duration: 2h 20m
 """,
         },
     ),
@@ -147,6 +233,8 @@ Speed: --
                 speed=0,
             ),
         ],
+        fake_fitbit_daily_activity_response=FITBIT_NONZERO_DAILY_ACTIVITY_RESPONSE,
+        expected_get_call_count=1,
         expected_post_call_count=0,
         expected_output_text={
             DisplayMode.PLAIN_TEXT: "",
@@ -170,6 +258,8 @@ Speed: --
                 speed=0,
             ),
         ],
+        fake_fitbit_daily_activity_response=FITBIT_NONZERO_DAILY_ACTIVITY_RESPONSE,
+        expected_get_call_count=3,
         expected_post_call_count=1,
         expected_post_query_params={
             "date": "2038-04-01",
@@ -181,18 +271,22 @@ Speed: --
             "manualCalories": 0,
         },
         expected_output_text={
-            DisplayMode.PLAIN_TEXT: """Distance: 1.25 km. Duration: 20m. Speed: 2.0 km/h.
-Distance: --. Duration: --. Speed: --.
+            DisplayMode.PLAIN_TEXT: """Distance: 1.25 km. Duration: 20m. Speed: 2.0 km/h. Total distance: 11.35 km. Total duration: 2h 20m.
+Distance: --. Duration: --. Speed: --. Total distance: 11.35 km. Total duration: 2h 20m.
 """,
-            DisplayMode.JSON: """{"distance_m": 1253, "duration_s": 1201, "speed_kph": 2.0}
-{"distance_m": null, "duration_s": null, "speed_kph": null}
+            DisplayMode.JSON: """{"distance_m": 1253, "duration_s": 1201, "speed_kph": 2.0, "total_distance_m": 11353, "total_duration_s": 8401}
+{"distance_m": null, "duration_s": null, "speed_kph": null, "total_distance_m": 11353, "total_duration_s": 8401}
 """,
             DisplayMode.RICH_TEXT: f"""{chr(27)}[2J{chr(27)}[HDistance: 1.25 km
 Duration: 20m
 Speed: 2.0 km/h
+Total distance: 11.35 km
+Total duration: 2h 20m
 {chr(27)}[2J{chr(27)}[HDistance: --
 Duration: --
 Speed: --
+Total distance: 11.35 km
+Total duration: 2h 20m
 """,
         },
     ),
@@ -212,6 +306,8 @@ Speed: --
                 speed=20,
             ),
         ],
+        fake_fitbit_daily_activity_response=FITBIT_NONZERO_DAILY_ACTIVITY_RESPONSE,
+        expected_get_call_count=3,
         expected_post_call_count=1,
         expected_post_query_params={
             "date": "2038-04-01",
@@ -223,18 +319,22 @@ Speed: --
             "manualCalories": 0,
         },
         expected_output_text={
-            DisplayMode.PLAIN_TEXT: """Distance: 1.25 km. Duration: 20m. Speed: 2.0 km/h.
-Distance: --. Duration: --. Speed: --.
+            DisplayMode.PLAIN_TEXT: """Distance: 1.25 km. Duration: 20m. Speed: 2.0 km/h. Total distance: 11.35 km. Total duration: 2h 20m.
+Distance: --. Duration: --. Speed: --. Total distance: 11.35 km. Total duration: 2h 20m.
 """,
-            DisplayMode.JSON: """{"distance_m": 1253, "duration_s": 1201, "speed_kph": 2.0}
-{"distance_m": null, "duration_s": null, "speed_kph": null}
+            DisplayMode.JSON: """{"distance_m": 1253, "duration_s": 1201, "speed_kph": 2.0, "total_distance_m": 11353, "total_duration_s": 8401}
+{"distance_m": null, "duration_s": null, "speed_kph": null, "total_distance_m": 11353, "total_duration_s": 8401}
 """,
             DisplayMode.RICH_TEXT: f"""{chr(27)}[2J{chr(27)}[HDistance: 1.25 km
 Duration: 20m
 Speed: 2.0 km/h
+Total distance: 11.35 km
+Total duration: 2h 20m
 {chr(27)}[2J{chr(27)}[HDistance: --
 Duration: --
 Speed: --
+Total distance: 11.35 km
+Total duration: 2h 20m
 """,
         },
     ),
@@ -294,14 +394,10 @@ async def test_monitor_monitoring_duration_elapsed(
     """
     Given a scenario where the walking pad emits certain data
     When we monitor the walking pad data until the monitoring duration elapses
-    Then we send the expected api calls to Fitbit to log (or not) the activity.
+    Then we send the expected api calls to Fitbit to retrieve the daily activity summary
+    And we send the expected api calls to Fitbit to log (or not) the activity.
     And we output the expected text to the screen.
     """
-    treadmill_event_handler = TreadmillEventHandler(
-        remote_activity_repository=remote_activity_repository,
-        display=get_display(display_mode),
-        event_output=event_output,
-    )
     with monkeypatch.context() as mp:
 
         # Given a scenario where the walking pad emits certain data
@@ -311,7 +407,12 @@ async def test_monitor_monitoring_duration_elapsed(
             frozen_datetime_args=(2038, 4, 1, 11, 33, 44, 0),
             local_timezone=ZoneInfo("America/Los_Angeles"),
         )
-        authlib_mocks: AuthLibMocks = fake_oauth_client(mp, AuthLibScenario())
+        authlib_mocks: AuthLibMocks = fake_oauth_client(
+            mp,
+            AuthLibScenario(
+                fake_get_response=monitor_scenario.fake_fitbit_daily_activity_response
+            ),
+        )
         configure_fake_walkingpad(
             mp,
             ScannerScenario(
@@ -324,6 +425,14 @@ async def test_monitor_monitoring_duration_elapsed(
             ),
         )
 
+        treadmill_event_handler = TreadmillEventHandler(
+            remote_activity_repository=remote_activity_repository,
+            display=get_display(display_mode),
+            event_output=event_output,
+        )
+        # Yield control to fetch the daily summary.
+        await asyncio.sleep(0)
+
         # When we monitor the walking pad data
         await monitor(
             device_name="some device",
@@ -332,7 +441,10 @@ async def test_monitor_monitoring_duration_elapsed(
             poll_interval_s=0.1,
         )
 
-        # Then we send the expected api calls to Fitbit to log (or not) the activity.
+        # Then we send the expected api calls to Fitbit to retrieve the daily activity summary
+        assert authlib_mocks.get.call_count == monitor_scenario.expected_get_call_count
+
+        # And we send the expected api calls to Fitbit to log (or not) the activity.
         assert (
             authlib_mocks.post.call_count == monitor_scenario.expected_post_call_count
         )

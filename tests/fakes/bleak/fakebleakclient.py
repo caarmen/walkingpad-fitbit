@@ -13,5 +13,4 @@ class FakeBleakClient:
             self.is_connected_values.pop(0)
         return result
 
-    async def disconnect(self):
-        pass
+    async def disconnect(self): ...

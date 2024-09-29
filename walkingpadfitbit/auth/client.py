@@ -14,8 +14,12 @@ class Client(Protocol):
     async def post(
         url: str,
         params: dict[str, Any],
-    ) -> Response:
-        pass
+    ) -> Response: ...
+
+    async def get(
+        url: str,
+        params: dict[str, Any],
+    ) -> Response: ...
 
 
 def get_client(
