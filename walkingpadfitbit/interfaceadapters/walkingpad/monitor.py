@@ -114,6 +114,7 @@ async def monitor(
 
 
 def signal_handler(signum, frame):
+    logger.info(f"Signal {signum} received")
     program_end_event.set()
 
 
