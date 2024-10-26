@@ -104,6 +104,11 @@ async def monitor(
             break
         await sleep(poll_interval_s)
 
+        # In case the user ctrl-C'd during the sleep, let's
+        # exit early, without checking if we need to reconnect.
+        if program_end_event.is_set():
+            break
+
         if not ctler.client.is_connected:
             logger.info("Got disconnected. Reconnecting...")
             await _safe_call(ctler.disconnect)
@@ -114,6 +119,7 @@ async def monitor(
 
 
 def signal_handler(signum, frame):
+    logger.info(f"Signal {signum} received")
     program_end_event.set()
 
 

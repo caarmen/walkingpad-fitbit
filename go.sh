@@ -10,4 +10,4 @@ fi
 
 source .venv/bin/activate
 pip install --requirement requirements/prod.txt
-python -m walkingpadfitbit.main $*
+exec python -m walkingpadfitbit.main $*
