@@ -6,6 +6,11 @@ from walkingpadfitbit.domain.display.plaintext import PlainTextDisplay
 from walkingpadfitbit.domain.display.richtext import RichTextDisplay
 
 
+class Action(enum.StrEnum):
+    MONITOR = "monitor"
+    STOP = "stop"
+
+
 class DisplayMode(enum.StrEnum):
     PLAIN_TEXT = "plaintext"
     RICH_TEXT = "richtext"

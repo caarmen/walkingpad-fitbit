@@ -5,7 +5,7 @@ import sys
 from walkingpadfitbit.auth.client import get_client
 from walkingpadfitbit.auth.config import Settings
 from walkingpadfitbit.domain.display.base import BaseDisplay
-from walkingpadfitbit.domain.display.factory import get_display
+from walkingpadfitbit.domain.display.factory import Action, get_display
 from walkingpadfitbit.domain.eventhandler import TreadmillEventHandler
 from walkingpadfitbit.interfaceadapters.cli.argparser import CliArgs, parse_args
 from walkingpadfitbit.interfaceadapters.cli.logincli import login_cli
@@ -13,6 +13,7 @@ from walkingpadfitbit.interfaceadapters.fitbit.remoterepository import (
     FitbitRemoteActivityRepository,
 )
 from walkingpadfitbit.interfaceadapters.walkingpad.monitor import monitor
+from walkingpadfitbit.interfaceadapters.walkingpad.remotecontrol import stop_device
 
 
 async def main(
@@ -46,12 +47,18 @@ async def main(
         remote_activity_repository=remote_activity_repository,
         display=display,
     )
-    await monitor(
-        device_name=args.device_name,
-        treadmill_event_handler=treadmill_event_handler,
-        monitor_duration_s=args.monitor_duration_s,
-        poll_interval_s=args.poll_interval_s,
-    )
+
+    if args.action == Action.MONITOR:
+        await monitor(
+            device_name=args.device_name,
+            treadmill_event_handler=treadmill_event_handler,
+            monitor_duration_s=args.monitor_duration_s,
+            poll_interval_s=args.poll_interval_s,
+        )
+    elif args.action == Action.STOP:
+        await stop_device(
+            device_name=args.device_name,
+        )
 
 
 if __name__ == "__main__":
