@@ -29,6 +29,7 @@ flowchart TD
     main
     auth
     subgraph domain
+        display
         entities
     end
     subgraph interfaceadapters
@@ -64,6 +65,14 @@ flowchart TD
     subgraph domain
         eventhandler
         remoterepository
+        subgraph display
+            base
+            factory
+            formatter
+            json
+            plaintext
+            richtext
+        end
         subgraph entities
             activity
             event
