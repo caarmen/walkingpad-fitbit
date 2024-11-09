@@ -18,9 +18,9 @@ from tests.fakes.ph4_walkingpad.fakecontroller import (
 from tests.fakes.ph4_walkingpad.fakescanner import ScannerScenario
 from tests.fixtures.authlib import AuthLibMocks, AuthLibScenario
 from walkingpadfitbit.domain.display.factory import DisplayMode, get_display
-from walkingpadfitbit.domain.eventhandler import TreadmillEventHandler
-from walkingpadfitbit.domain.eventhandler import dt as datetime_to_freeze
-from walkingpadfitbit.domain.monitor import monitor
+from walkingpadfitbit.domain.monitoring.eventhandler import TreadmillEventHandler
+from walkingpadfitbit.domain.monitoring.eventhandler import dt as datetime_to_freeze
+from walkingpadfitbit.domain.monitoring.monitor import monitor
 from walkingpadfitbit.domain.remoterepository import RemoteActivityRepository
 from walkingpadfitbit.interfaceadapters.walkingpad.device import get_device
 from walkingpadfitbit.interfaceadapters.walkingpad.treadmillcontroller import (

@@ -6,7 +6,7 @@ from asyncio import sleep
 from typing import Any, Awaitable, Callable
 
 from walkingpadfitbit.domain.entities.event import TreadmillStopEvent
-from walkingpadfitbit.domain.eventhandler import TreadmillEventHandler
+from walkingpadfitbit.domain.monitoring.eventhandler import TreadmillEventHandler
 from walkingpadfitbit.domain.treadmillcontroller import TreadmillController
 
 logger = logging.getLogger(__name__)
