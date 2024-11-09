@@ -31,6 +31,7 @@ flowchart TD
     subgraph domain
         display
         entities
+        monitoring
     end
     subgraph interfaceadapters
         cli
@@ -63,7 +64,7 @@ flowchart TD
         storage
     end
     subgraph domain
-        eventhandler
+        treadmillcontroller
         remoterepository
         subgraph display
             base
@@ -77,6 +78,10 @@ flowchart TD
             activity
             event
         end
+        subgraph monitoring
+            eventhandler
+            monitor
+        end
     end
     subgraph interfaceadapters
         subgraph cli
@@ -86,7 +91,8 @@ flowchart TD
             fitbitemoterepository["remoterepository"]
         end
         subgraph walkingpad
-            monitor
+            walkingpadtreadmillcontroller["treadmillcontroller"]
+            device
         end
     end
 
