@@ -13,7 +13,7 @@ from walkingpadfitbit.interfaceadapters.cli.logincli import login_cli
 from walkingpadfitbit.interfaceadapters.fitbit.remoterepository import (
     FitbitRemoteActivityRepository,
 )
-from walkingpadfitbit.interfaceadapters.walkingpad.device import get_device
+from walkingpadfitbit.interfaceadapters.walkingpad.device import get_device, DeviceNotFoundException
 from walkingpadfitbit.interfaceadapters.walkingpad.treadmillcontroller import (
     WalkingpadTreadmillController,
 )
@@ -52,9 +52,10 @@ async def main(
         display=display,
     )
 
-    device = await get_device(args.device_name)
-    if not device:
-        logger.error(f"{args.device_name} not found")
+    try:
+        device = await get_device(args.device_name)
+    except DeviceNotFoundException as e:
+        logger.error(e)
         return
 
     await monitor(
