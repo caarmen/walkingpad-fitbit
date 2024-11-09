@@ -5,6 +5,9 @@ import time
 from asyncio import sleep
 from typing import Any, Awaitable, Callable
 
+from dependency_injector.wiring import Provide, inject
+
+from walkingpadfitbit.containers import Container
 from walkingpadfitbit.domain.entities.event import TreadmillStopEvent
 from walkingpadfitbit.domain.monitoring.eventhandler import TreadmillEventHandler
 from walkingpadfitbit.domain.treadmillcontroller import TreadmillController
@@ -26,11 +29,12 @@ async def _safe_call(
         logger.exception("Exception: %s", e)
 
 
+@inject
 async def monitor(
-    ctler: TreadmillController,
     treadmill_event_handler: TreadmillEventHandler,
     monitor_duration_s: float | None = None,
     poll_interval_s: float = 1.0,
+    ctler: TreadmillController = Provide[Container.treadmill_controller],
 ):
     """
     1. Find the device with the given name.
