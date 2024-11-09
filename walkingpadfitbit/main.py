@@ -2,6 +2,7 @@ import asyncio
 import logging
 import sys
 
+from walkingpadfitbit import container
 from walkingpadfitbit.auth.client import get_client
 from walkingpadfitbit.auth.config import Settings
 from walkingpadfitbit.domain.display.base import BaseDisplay
@@ -13,10 +14,7 @@ from walkingpadfitbit.interfaceadapters.cli.logincli import login_cli
 from walkingpadfitbit.interfaceadapters.fitbit.remoterepository import (
     FitbitRemoteActivityRepository,
 )
-from walkingpadfitbit.interfaceadapters.walkingpad.device import get_device, DeviceNotFoundException
-from walkingpadfitbit.interfaceadapters.walkingpad.treadmillcontroller import (
-    WalkingpadTreadmillController,
-)
+from walkingpadfitbit.interfaceadapters.walkingpad.device import DeviceNotFoundException
 
 
 async def main(
@@ -32,6 +30,7 @@ async def main(
 
     # Get command-line arguments.
     args: CliArgs = parse_args()
+    container.config.set("device.name", args.device_name)
 
     # Log into Fitbit
     settings = Settings(_env_file=env_file)
@@ -53,17 +52,13 @@ async def main(
     )
 
     try:
-        device = await get_device(args.device_name)
+        await monitor(
+            treadmill_event_handler=treadmill_event_handler,
+            monitor_duration_s=args.monitor_duration_s,
+            poll_interval_s=args.poll_interval_s,
+        )
     except DeviceNotFoundException as e:
         logger.error(e)
-        return
-
-    await monitor(
-        ctler=WalkingpadTreadmillController(device),
-        treadmill_event_handler=treadmill_event_handler,
-        monitor_duration_s=args.monitor_duration_s,
-        poll_interval_s=args.poll_interval_s,
-    )
 
 
 if __name__ == "__main__":
