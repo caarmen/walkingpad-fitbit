@@ -5,10 +5,9 @@ import time
 from asyncio import sleep
 from typing import Any, Awaitable, Callable
 
-from ph4_walkingpad.pad import Scanner
-
 from walkingpadfitbit.domain.entities.event import TreadmillStopEvent
 from walkingpadfitbit.domain.eventhandler import TreadmillEventHandler
+from walkingpadfitbit.interfaceadapters.walkingpad.device import get_device
 from walkingpadfitbit.interfaceadapters.walkingpad.treadmillcontroller import (
     WalkingpadTreadmillController,
 )
@@ -42,15 +41,10 @@ async def monitor(
     3. Loop, asking the controller for stats.
     """
     # 1. Find the device with the given name.
-    scanner = Scanner()
-    await scanner.scan(dev_name=device_name.lower())
-
-    if not scanner.walking_belt_candidates:
+    device = await get_device(device_name)
+    if not device:
         logger.error(f"{device_name} not found")
         return
-
-    device = scanner.walking_belt_candidates[0]
-    logger.info(f"Found device {device}")
 
     # 2. Run the controller for the found device.
     ctler = WalkingpadTreadmillController(
