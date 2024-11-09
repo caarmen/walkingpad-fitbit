@@ -5,45 +5,18 @@ import time
 from asyncio import sleep
 from typing import Any, Awaitable, Callable
 
-from ph4_walkingpad.pad import Controller, Scanner, WalkingPadCurStatus
+from ph4_walkingpad.pad import Scanner
 
-from walkingpadfitbit.domain.entities.event import (
-    TreadmillEvent,
-    TreadmillStopEvent,
-    TreadmillWalkEvent,
-)
+from walkingpadfitbit.domain.entities.event import TreadmillStopEvent
 from walkingpadfitbit.domain.eventhandler import TreadmillEventHandler
+from walkingpadfitbit.interfaceadapters.walkingpad.treadmillcontroller import (
+    WalkingpadTreadmillController,
+)
 
 logger = logging.getLogger(__name__)
 
 
 program_end_event = asyncio.Event()
-
-
-def on_cur_status_received(
-    status: WalkingPadCurStatus,
-    treadmill_event_handler: TreadmillEventHandler,
-):
-    treadmill_event = _to_treadmill_event(status)
-    if treadmill_event:
-        treadmill_event_handler.handle_treadmill_event(treadmill_event)
-
-
-def _to_treadmill_event(status: WalkingPadCurStatus) -> TreadmillEvent:
-    # status.dist is "distance in 10 meters"
-    # distance_m = status.dist * 10
-    # distance_km = distance_m / 1000
-    #   = (status.dist * 10) / 1000
-    #   = status.dist / 100
-
-    # https://github.com/ph4r05/ph4-walkingpad/tree/master?tab=readme-ov-file#protocol-basics
-    if status.belt_state == 1:
-        return TreadmillWalkEvent(
-            time_s=status.time,
-            dist_km=status.dist / 100,
-            speed_kph=status.speed / 10,
-        )
-    return TreadmillStopEvent
 
 
 async def _safe_call(
@@ -68,7 +41,6 @@ async def monitor(
     2. Run the controller for the found device.
     3. Loop, asking the controller for stats.
     """
-
     # 1. Find the device with the given name.
     scanner = Scanner()
     await scanner.scan(dev_name=device_name.lower())
@@ -81,12 +53,12 @@ async def monitor(
     logger.info(f"Found device {device}")
 
     # 2. Run the controller for the found device.
-    ctler = Controller()
-    ctler.handler_cur_status = lambda _, status: on_cur_status_received(
-        status, treadmill_event_handler
+    ctler = WalkingpadTreadmillController(
+        device=device,
     )
+    ctler.subscribe(treadmill_event_handler.handle_treadmill_event)
 
-    await ctler.run(device)
+    await ctler.connect()
     # 3. Loop, asking the controller for stats.
     start_timestamp = time.time()
     stop_timestamp = (
@@ -109,11 +81,11 @@ async def monitor(
         if program_end_event.is_set():
             break
 
-        if not ctler.client.is_connected:
+        if not ctler.is_connected():
             logger.info("Got disconnected. Reconnecting...")
             await _safe_call(ctler.disconnect)
             await sleep(5)
-            await _safe_call(ctler.run, device)
+            await _safe_call(ctler.connect)
 
     logger.info("Stop monitoring")
 
