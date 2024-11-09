@@ -21,7 +21,11 @@ from walkingpadfitbit.domain.display.factory import DisplayMode, get_display
 from walkingpadfitbit.domain.eventhandler import TreadmillEventHandler
 from walkingpadfitbit.domain.eventhandler import dt as datetime_to_freeze
 from walkingpadfitbit.domain.remoterepository import RemoteActivityRepository
+from walkingpadfitbit.interfaceadapters.walkingpad.device import get_device
 from walkingpadfitbit.interfaceadapters.walkingpad.monitor import monitor
+from walkingpadfitbit.interfaceadapters.walkingpad.treadmillcontroller import (
+    WalkingpadTreadmillController,
+)
 
 
 @dataclass
@@ -434,8 +438,9 @@ async def test_monitor_monitoring_duration_elapsed(
         await asyncio.sleep(0)
 
         # When we monitor the walking pad data
+        device = await get_device("some device")
         await monitor(
-            device_name="some device",
+            WalkingpadTreadmillController(device),
             treadmill_event_handler=treadmill_event_handler,
             monitor_duration_s=1.0,
             poll_interval_s=0.1,

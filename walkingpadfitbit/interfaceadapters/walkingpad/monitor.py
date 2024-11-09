@@ -7,10 +7,7 @@ from typing import Any, Awaitable, Callable
 
 from walkingpadfitbit.domain.entities.event import TreadmillStopEvent
 from walkingpadfitbit.domain.eventhandler import TreadmillEventHandler
-from walkingpadfitbit.interfaceadapters.walkingpad.device import get_device
-from walkingpadfitbit.interfaceadapters.walkingpad.treadmillcontroller import (
-    WalkingpadTreadmillController,
-)
+from walkingpadfitbit.domain.treadmillcontroller import TreadmillController
 
 logger = logging.getLogger(__name__)
 
@@ -30,7 +27,7 @@ async def _safe_call(
 
 
 async def monitor(
-    device_name: str,
+    ctler: TreadmillController,
     treadmill_event_handler: TreadmillEventHandler,
     monitor_duration_s: float | None = None,
     poll_interval_s: float = 1.0,
@@ -40,16 +37,6 @@ async def monitor(
     2. Run the controller for the found device.
     3. Loop, asking the controller for stats.
     """
-    # 1. Find the device with the given name.
-    device = await get_device(device_name)
-    if not device:
-        logger.error(f"{device_name} not found")
-        return
-
-    # 2. Run the controller for the found device.
-    ctler = WalkingpadTreadmillController(
-        device=device,
-    )
     ctler.subscribe(treadmill_event_handler.handle_treadmill_event)
 
     await ctler.connect()

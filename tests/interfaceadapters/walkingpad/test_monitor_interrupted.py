@@ -22,7 +22,11 @@ from walkingpadfitbit.domain.display.factory import DisplayMode, get_display
 from walkingpadfitbit.domain.eventhandler import TreadmillEventHandler
 from walkingpadfitbit.domain.eventhandler import dt as datetime_to_freeze
 from walkingpadfitbit.domain.remoterepository import RemoteActivityRepository
+from walkingpadfitbit.interfaceadapters.walkingpad.device import get_device
 from walkingpadfitbit.interfaceadapters.walkingpad.monitor import monitor
+from walkingpadfitbit.interfaceadapters.walkingpad.treadmillcontroller import (
+    WalkingpadTreadmillController,
+)
 
 
 @dataclass
@@ -298,10 +302,11 @@ async def test_monitor_monitoring_interrupted(
 
         # When we call the main() entry point
         async with TaskGroup() as tg:
+            device = await get_device("some device")
             tg.create_task(
                 # When we monitor the walking pad data
                 monitor(
-                    device_name="some device",
+                    ctler=WalkingpadTreadmillController(device),
                     treadmill_event_handler=treadmill_event_handler,
                     monitor_duration_s=None,
                     poll_interval_s=0.1,
