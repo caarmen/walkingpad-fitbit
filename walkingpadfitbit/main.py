@@ -7,13 +7,13 @@ from walkingpadfitbit.auth.config import Settings
 from walkingpadfitbit.domain.display.base import BaseDisplay
 from walkingpadfitbit.domain.display.factory import get_display
 from walkingpadfitbit.domain.eventhandler import TreadmillEventHandler
+from walkingpadfitbit.domain.monitor import monitor
 from walkingpadfitbit.interfaceadapters.cli.argparser import CliArgs, parse_args
 from walkingpadfitbit.interfaceadapters.cli.logincli import login_cli
 from walkingpadfitbit.interfaceadapters.fitbit.remoterepository import (
     FitbitRemoteActivityRepository,
 )
 from walkingpadfitbit.interfaceadapters.walkingpad.device import get_device
-from walkingpadfitbit.interfaceadapters.walkingpad.monitor import monitor
 from walkingpadfitbit.interfaceadapters.walkingpad.treadmillcontroller import (
     WalkingpadTreadmillController,
 )

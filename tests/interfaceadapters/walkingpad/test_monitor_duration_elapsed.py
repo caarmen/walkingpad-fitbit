@@ -20,9 +20,9 @@ from tests.fixtures.authlib import AuthLibMocks, AuthLibScenario
 from walkingpadfitbit.domain.display.factory import DisplayMode, get_display
 from walkingpadfitbit.domain.eventhandler import TreadmillEventHandler
 from walkingpadfitbit.domain.eventhandler import dt as datetime_to_freeze
+from walkingpadfitbit.domain.monitor import monitor
 from walkingpadfitbit.domain.remoterepository import RemoteActivityRepository
 from walkingpadfitbit.interfaceadapters.walkingpad.device import get_device
-from walkingpadfitbit.interfaceadapters.walkingpad.monitor import monitor
 from walkingpadfitbit.interfaceadapters.walkingpad.treadmillcontroller import (
     WalkingpadTreadmillController,
 )
