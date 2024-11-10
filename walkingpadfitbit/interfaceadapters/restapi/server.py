@@ -1,6 +1,9 @@
+from copy import deepcopy
+
 import uvicorn
 from asgiref.wsgi import WsgiToAsgi
 from flask import Flask
+from uvicorn.config import LOGGING_CONFIG
 
 from walkingpadfitbit.interfaceadapters.restapi import treadmillbp
 
@@ -15,11 +18,18 @@ async def run_server(
     host: str = "127.0.0.1",
     port: int = 11198,
 ):
+    # Configure uvicorn to log request accesses to stderr.
+    # In fact, we want all logs to stderr, to not be mixed
+    # with the monitoring output of this application.
+    log_config = deepcopy(LOGGING_CONFIG)
+    log_config["handlers"]["access"]["stream"] = "ext://sys.stderr"
+
     server = uvicorn.Server(
         uvicorn.Config(
             WsgiToAsgi(create_app()),
             host=host,
             port=port,
+            log_config=log_config,
         )
     )
     await server.serve()
