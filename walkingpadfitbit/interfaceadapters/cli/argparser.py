@@ -9,6 +9,8 @@ class CliArgs(Protocol):
     monitor_duration_s: float
     poll_interval_s: float
     display_mode: DisplayMode
+    server_host: str
+    server_port: int
 
 
 def parse_args() -> CliArgs:
@@ -41,6 +43,18 @@ def parse_args() -> CliArgs:
         type=DisplayMode,
         choices=DisplayMode,
         default=DisplayMode.RICH_TEXT,
+    )
+    arg_parser.add_argument(
+        "--server-host",
+        help="Host on which the http server will run.",
+        type=str,
+        default="127.0.0.1",
+    )
+    arg_parser.add_argument(
+        "--server-port",
+        help="Port on which the http server will run.",
+        type=int,
+        default=11198,
     )
 
     return arg_parser.parse_args()
