@@ -5,5 +5,6 @@ pytest_plugins=[
     "tests.fixtures.container",
     "tests.fixtures.domain",
     "tests.fixtures.keyring",
+    "tests.fixtures.restapi",
     "tests.fixtures.webbrowser",
 ]

@@ -1,0 +1,29 @@
+{
+  "info": {
+    "title": "Treadmill API"
+  },
+  "paths": {
+    "/treadmill/start": {
+      "post": {
+        "summary": "Start the treadmill.",
+        "responses": {
+          "204": {
+            "description": "The treadmill was successfully started."
+          }
+        }
+      }
+    },
+    "/treadmill/stop": {
+      "post": {
+        "summary": "Stop the treadmill.",
+        "responses": {
+          "204": {
+            "description": "The treadmill was successfully stopped."
+          }
+        }
+      }
+    }
+  },
+  "definitions": {},
+  "swagger": "2.0"
+}
