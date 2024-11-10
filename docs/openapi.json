@@ -1,6 +1,9 @@
 {
   "info": {
-    "title": "Treadmill API"
+    "version": "0.0.1",
+    "title": "Treadmill API",
+    "description": "powered by Flasgger",
+    "termsOfService": null
   },
   "paths": {
     "/treadmill/start": {
