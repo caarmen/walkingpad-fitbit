@@ -13,7 +13,10 @@ class Container(containers.DeclarativeContainer):
     config = providers.Configuration()
 
     wiring_config = containers.WiringConfiguration(
-        modules=["walkingpadfitbit.domain.monitoring.monitor"],
+        modules=[
+            "walkingpadfitbit.domain.monitoring.monitor",
+            "walkingpadfitbit.interfaceadapters.restapi.treadmillbp",
+        ],
     )
 
     device: BLEDevice = providers.Factory(
