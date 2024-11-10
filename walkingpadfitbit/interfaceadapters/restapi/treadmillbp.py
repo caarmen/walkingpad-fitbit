@@ -18,6 +18,13 @@ bp = Blueprint(
 async def start(
     ctler: TreadmillController = Provide[Container.treadmill_controller],
 ):
+    """
+    Start the treadmill.
+    ---
+    responses:
+      204:
+        description: The treadmill was successfully started.
+    """
     await ctler.start()
     return Response(status=HTTPStatus.NO_CONTENT)
 
@@ -27,5 +34,12 @@ async def start(
 async def stop(
     ctler: TreadmillController = Provide[Container.treadmill_controller],
 ):
+    """
+    Stop the treadmill.
+    ---
+    responses:
+      204:
+        description: The treadmill was successfully stopped.
+    """
     await ctler.stop()
     return Response(status=HTTPStatus.NO_CONTENT)

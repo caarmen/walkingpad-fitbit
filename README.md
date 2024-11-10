@@ -87,6 +87,8 @@ The server exposes two routes:
   curl -X POST http://127.0.0.1:11198/treadmill/stop
   ```
 
+A Swagger UI is available at the root route: http://127.0.0.1:11198/
+
 ## Authentication
 The first time you run the app, you will be prompted to log in to Fitbit, to grant authorization
 (to the Fitbit app you created). After granting authorization, Fitbit will attempt to redirect to the

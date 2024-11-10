@@ -2,6 +2,7 @@ from copy import deepcopy
 
 import uvicorn
 from asgiref.wsgi import WsgiToAsgi
+from flasgger import Swagger
 from flask import Flask
 from uvicorn.config import LOGGING_CONFIG
 
@@ -11,6 +12,15 @@ from walkingpadfitbit.interfaceadapters.restapi import treadmillbp
 def create_app():
     app = Flask(__name__)
     app.register_blueprint(treadmillbp.bp)
+    swagger_config = deepcopy(Swagger.DEFAULT_CONFIG)
+    swagger_config["info"] = {
+        "title": "Treadmill API",
+    }
+    swagger_config["specs_route"] = "/"
+    Swagger(
+        app,
+        config=swagger_config,
+    )
     return app
 
 
