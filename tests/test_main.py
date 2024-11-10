@@ -25,9 +25,9 @@ def server_port(
     """
     To avoid conflicts running the rest server on the same port when running
     tests in parallel (with -n auto):
-    Choose a port starting from 5000, depending on the current test worker.
+    Choose a port starting from 11198, depending on the current test worker.
     """
-    base_port = 5000
+    base_port = 11198
     if worker_id == "master":
         return base_port
 
