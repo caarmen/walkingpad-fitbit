@@ -36,6 +36,7 @@ flowchart TD
     subgraph interfaceadapters
         cli
         fitbit
+        restapi
         walkingpad
     end
 
@@ -89,6 +90,10 @@ flowchart TD
         end
         subgraph fitbit
             fitbitemoterepository["remoterepository"]
+        end
+        subgraph restapi
+            server
+            treadmillbp
         end
         subgraph walkingpad
             walkingpadtreadmillcontroller["treadmillcontroller"]
