@@ -18,10 +18,29 @@ fake_oauth_token = {
 }
 
 
+@pytest.fixture
+def server_port(
+    worker_id: str,  # ex: gw0, gw1, ...
+):
+    """
+    To avoid conflicts running the rest server on the same port when running
+    tests in parallel (with -n auto):
+    Choose a port starting from 5000, depending on the current test worker.
+    """
+    base_port = 5000
+    if worker_id == "master":
+        return base_port
+
+    port_offset = int(worker_id.replace("gw", ""))  # ex: 0, 1, ...
+
+    return base_port + port_offset
+
+
 @pytest.mark.asyncio
 async def test_main_required_args(
     monkeypatch: pytest.MonkeyPatch,
     fake_oauth_client: Callable[[pytest.MonkeyPatch, AuthLibScenario], AuthLibMocks],
+    server_port: int,
 ):
     """
     Given an authlib setup to provide successful responses,
@@ -41,7 +60,16 @@ async def test_main_required_args(
         configure_fake_walkingpad(mp)
 
         # Simulate the user's command-line arguments.
-        mp.setattr(sys, "argv", ["main.py", "some device name"])
+        mp.setattr(
+            sys,
+            "argv",
+            [
+                "main.py",
+                "--server-port",
+                str(server_port),
+                "some device name",
+            ],
+        )
         # Simulate the user pasting the callback url.
         mp.setattr("builtins.input", lambda _: scenario.fake_callback_url)
 
@@ -68,6 +96,7 @@ async def test_main_required_args(
 async def test_main_optional_args(
     monkeypatch: pytest.MonkeyPatch,
     fake_oauth_client: Callable[[pytest.MonkeyPatch, AuthLibScenario], AuthLibMocks],
+    server_port: int,
 ):
     """
     Given an authlib setup to provide successful responses,
@@ -96,6 +125,8 @@ async def test_main_optional_args(
                 "1.0",
                 "--poll-interval",
                 "0.1",
+                "--server-port",
+                str(server_port),
                 "some device name",
             ],
         )
