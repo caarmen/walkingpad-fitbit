@@ -13,10 +13,10 @@ def create_app():
     app = Flask(__name__)
     app.register_blueprint(treadmillbp.bp)
     swagger_config = deepcopy(Swagger.DEFAULT_CONFIG)
-    swagger_config["info"] = {
-        "title": "Treadmill API",
-    }
+    swagger_config["title"] = "Treadmill API"
     swagger_config["specs_route"] = "/"
+    swagger_config["termsOfService"] = None
+
     Swagger(
         app,
         config=swagger_config,
