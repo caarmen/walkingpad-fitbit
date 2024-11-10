@@ -89,6 +89,8 @@ The server exposes two routes:
 
 A Swagger UI is available at the root route: http://127.0.0.1:11198/
 
+Static api documentation is available in the [GitHub pages](https://caarmen.github.io/walkingpad-fitbit/restapi.html) for this project.
+
 ## Authentication
 The first time you run the app, you will be prompted to log in to Fitbit, to grant authorization
 (to the Fitbit app you created). After granting authorization, Fitbit will attempt to redirect to the

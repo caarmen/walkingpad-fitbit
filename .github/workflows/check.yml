@@ -23,6 +23,8 @@ jobs:
         run: cp .env.template .env
       - name: Run codecheck
         run: bash scripts/codecheck.sh
+      - name: Check api doc up to date
+        run: scripts/create_doc.sh
       - name: Run tests
         run: bash -x scripts/run_tests.sh
       - name: Publish Test Report
