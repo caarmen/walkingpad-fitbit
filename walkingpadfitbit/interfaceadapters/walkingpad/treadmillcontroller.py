@@ -1,7 +1,9 @@
+import asyncio
+import logging
 from typing import Callable
 
 from bleak.backends.device import BLEDevice
-from ph4_walkingpad.pad import Controller, WalkingPadCurStatus
+from ph4_walkingpad.pad import Controller, WalkingPad, WalkingPadCurStatus
 
 from walkingpadfitbit.domain.entities.event import (
     TreadmillEvent,
@@ -9,6 +11,8 @@ from walkingpadfitbit.domain.entities.event import (
     TreadmillWalkEvent,
 )
 from walkingpadfitbit.domain.treadmillcontroller import TreadmillController
+
+logger = logging.getLogger(__name__)
 
 
 class WalkingpadTreadmillController(TreadmillController):
@@ -35,6 +39,20 @@ class WalkingpadTreadmillController(TreadmillController):
 
     async def ask_stats(self) -> None:
         await self.ctler.ask_stats()
+
+    async def start(self) -> None:
+        await self.ctler.switch_mode(WalkingPad.MODE_MANUAL)
+        await asyncio.sleep(1)
+        logger.info("Starting device...")
+        await self.ctler.start_belt()
+        logger.info("Started device.")
+
+    async def stop(self) -> None:
+        logger.info("Stopping device...")
+        await self.ctler.stop_belt()
+        logger.info("Stopped device.")
+        await asyncio.sleep(3)
+        await self.ctler.switch_mode(WalkingPad.MODE_STANDBY)
 
 
 def _to_treadmill_event(status: WalkingPadCurStatus) -> TreadmillEvent:
