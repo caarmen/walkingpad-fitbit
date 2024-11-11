@@ -1,33 +1,33 @@
 {
-  "info": {
-    "title": "Treadmill API",
-    "version": "0.0.1"
-  },
   "paths": {
     "/treadmill/start": {
       "post": {
-        "summary": "Start the treadmill.",
         "responses": {
           "204": {
             "description": "The treadmill was successfully started."
           }
-        }
+        },
+        "summary": "Start the treadmill.",
+        "tags": [
+          "treadmill"
+        ]
       }
     },
     "/treadmill/stop": {
       "post": {
-        "summary": "Stop the treadmill.",
         "responses": {
           "204": {
             "description": "The treadmill was successfully stopped."
           }
-        }
+        },
+        "summary": "Stop the treadmill.",
+        "tags": [
+          "treadmill"
+        ]
       }
     },
     "/treadmill/toggle-start-stop": {
       "post": {
-        "summary": "Toggle the start/stop state of the treadmill.",
-        "description": "If the treadmill is running, stop it.<br/>If the treadmill isn't running, start it.<br/>",
         "responses": {
           "200": {
             "description": "The treadmill start/stop state was successfully toggled.",
@@ -39,10 +39,26 @@
               }
             }
           }
-        }
+        },
+        "summary": "Toggle the start/stop state of the treadmill.",
+        "description": "If the treadmill is running, stop it.\n\nIf the treadmill isn't running, start it.",
+        "tags": [
+          "treadmill"
+        ]
       }
     }
   },
+  "info": {
+    "title": "Treadmill API",
+    "version": "0.0.1"
+  },
+  "tags": [
+    {
+      "name": "treadmill",
+      "description": ""
+    }
+  ],
+  "openapi": "3.0.2",
   "components": {
     "schemas": {
       "ToggleResponse": {
@@ -61,6 +77,5 @@
         ]
       }
     }
-  },
-  "openapi": "3.0.0"
+  }
 }
