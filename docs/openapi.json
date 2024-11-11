@@ -1,9 +1,7 @@
 {
   "info": {
-    "version": "0.0.1",
     "title": "Treadmill API",
-    "description": "powered by Flasgger",
-    "termsOfService": null
+    "version": "0.0.1"
   },
   "paths": {
     "/treadmill/start": {
@@ -27,6 +25,8 @@
       }
     }
   },
-  "definitions": {},
-  "swagger": "2.0"
+  "components": {
+    "schemas": {}
+  },
+  "openapi": "3.0.0"
 }
