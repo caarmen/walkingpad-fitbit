@@ -35,6 +35,9 @@ def create_app():
         },
         template=spec.to_flasgger(
             app,
+            definitions=[
+                treadmillbp.ToggleResponseSchema,
+            ],
         ),
     )
     return app

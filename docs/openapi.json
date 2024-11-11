@@ -23,10 +23,44 @@
           }
         }
       }
+    },
+    "/treadmill/toggle-start-stop": {
+      "post": {
+        "summary": "Toggle the start/stop state of the treadmill.",
+        "description": "If the treadmill is running, stop it.<br/>If the treadmill isn't running, start it.<br/>",
+        "responses": {
+          "200": {
+            "description": "The treadmill start/stop state was successfully toggled.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ToggleResponse"
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
-    "schemas": {}
+    "schemas": {
+      "ToggleResponse": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": [
+              "started",
+              "stopped"
+            ]
+          }
+        },
+        "required": [
+          "status"
+        ]
+      }
+    }
   },
   "openapi": "3.0.0"
 }

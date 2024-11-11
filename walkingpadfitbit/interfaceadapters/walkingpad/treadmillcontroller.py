@@ -40,6 +40,10 @@ class WalkingpadTreadmillController(TreadmillController):
     async def ask_stats(self) -> None:
         await self.ctler.ask_stats()
 
+    def is_on(self) -> bool:
+        last_status = self.ctler.last_status
+        return last_status and last_status.belt_state == 1
+
     async def start(self) -> None:
         await self.ctler.switch_mode(WalkingPad.MODE_MANUAL)
         await asyncio.sleep(1)

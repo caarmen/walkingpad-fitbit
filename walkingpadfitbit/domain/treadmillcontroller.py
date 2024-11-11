@@ -21,6 +21,9 @@ class TreadmillController(ABC):
     async def ask_stats(self) -> None: ...
 
     @abstractmethod
+    def is_on(self) -> bool: ...
+
+    @abstractmethod
     async def start(self) -> None: ...
 
     @abstractmethod
