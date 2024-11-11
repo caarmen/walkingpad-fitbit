@@ -16,6 +16,7 @@ class ControllerScenario:
     cur_statuses: list[FakeWalkingPadCurStatus] | None = None
     is_connected_values: list[bool] | None = None
     run_exceptions: list[Exception | None] = None
+    last_status: FakeWalkingPadCurStatus | None = None
 
 
 class FakeController:
@@ -25,6 +26,7 @@ class FakeController:
         self.scenario = scenario if scenario else ControllerScenario()
         self.run_iterations = 0
         self.ask_stats_iterations = 0
+        self.last_status = self.scenario.last_status
 
     async def run(self, *args, **kwargs):
         if self.scenario.run_exceptions and self.run_iterations < len(

@@ -1,8 +1,10 @@
 from copy import deepcopy
 
 import uvicorn
+from apispec.ext.marshmallow import MarshmallowPlugin
+from apispec_webframeworks.flask import FlaskPlugin
 from asgiref.wsgi import WsgiToAsgi
-from flasgger import Swagger
+from flasgger import APISpec, Swagger
 from flask import Flask
 from uvicorn.config import LOGGING_CONFIG
 
@@ -12,14 +14,31 @@ from walkingpadfitbit.interfaceadapters.restapi import treadmillbp
 def create_app():
     app = Flask(__name__)
     app.register_blueprint(treadmillbp.bp)
-    swagger_config = deepcopy(Swagger.DEFAULT_CONFIG)
-    swagger_config["title"] = "Treadmill API"
-    swagger_config["specs_route"] = "/"
-    swagger_config["termsOfService"] = None
+
+    spec = APISpec(
+        title="Treadmill API",
+        version="0.0.1",
+        openapi_version="3.0.0",
+        plugins=[
+            FlaskPlugin(),
+            MarshmallowPlugin(),
+        ],
+    )
 
     Swagger(
         app,
-        config=swagger_config,
+        config={
+            **Swagger.DEFAULT_CONFIG,
+            "title": spec.title,
+            "specs_route": "/",
+            "openapi": spec.openapi_version,
+        },
+        template=spec.to_flasgger(
+            app,
+            definitions=[
+                treadmillbp.ToggleResponseSchema,
+            ],
+        ),
     )
     return app
 
