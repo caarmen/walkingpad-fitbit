@@ -1,11 +1,9 @@
 from copy import deepcopy
 
 import uvicorn
-from apispec.ext.marshmallow import MarshmallowPlugin
-from apispec_webframeworks.flask import FlaskPlugin
 from asgiref.wsgi import WsgiToAsgi
-from flasgger import APISpec, Swagger
 from flask import Flask
+from flask_smorest import Api
 from uvicorn.config import LOGGING_CONFIG
 
 from walkingpadfitbit.interfaceadapters.restapi import treadmillbp
@@ -13,33 +11,23 @@ from walkingpadfitbit.interfaceadapters.restapi import treadmillbp
 
 def create_app():
     app = Flask(__name__)
-    app.register_blueprint(treadmillbp.bp)
 
-    spec = APISpec(
-        title="Treadmill API",
-        version="0.0.1",
-        openapi_version="3.0.0",
-        plugins=[
-            FlaskPlugin(),
-            MarshmallowPlugin(),
-        ],
+    app.config["API_TITLE"] = "Treadmill API"
+    app.config["API_VERSION"] = "0.0.1"
+    app.config["OPENAPI_VERSION"] = "3.0.2"
+    app.config["OPENAPI_JSON_PATH"] = "api-spec.json"
+    app.config["OPENAPI_URL_PREFIX"] = "/"
+    app.config["OPENAPI_SWAGGER_UI_PATH"] = "/"
+    app.config["OPENAPI_SWAGGER_UI_URL"] = (
+        "https://cdn.jsdelivr.net/npm/swagger-ui-dist/"
     )
 
-    Swagger(
-        app,
-        config={
-            **Swagger.DEFAULT_CONFIG,
-            "title": spec.title,
-            "specs_route": "/",
-            "openapi": spec.openapi_version,
-        },
-        template=spec.to_flasgger(
-            app,
-            definitions=[
-                treadmillbp.ToggleResponseSchema,
-            ],
-        ),
-    )
+    api = Api(app)
+    api.DEFAULT_ERROR_RESPONSE_NAME = None
+    # Remove built-in schemas from smorest: we don't use them.
+    api.spec.components.schemas.clear()
+    api.register_blueprint(treadmillbp.bp)
+
     return app
 
 
