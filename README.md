@@ -86,6 +86,11 @@ The server exposes two routes:
   ```
   curl -X POST http://127.0.0.1:11198/treadmill/stop
   ```
+* `POST /treadmill/toggle-start-stop`: to start the treadmill if it's running, otherwise stop it.
+  Curl example:
+  ```
+  curl -X POST http://127.0.0.1:11198/treadmill/toggle-start-stop
+  ```
 
 A Swagger UI is available at the root route: http://127.0.0.1:11198/
 
