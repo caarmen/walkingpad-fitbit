@@ -24,8 +24,6 @@ def create_app():
 
     api = Api(app)
     api.DEFAULT_ERROR_RESPONSE_NAME = None
-    # Remove built-in schemas from smorest: we don't use them.
-    api.spec.components.schemas.clear()
     api.register_blueprint(treadmillbp.bp)
 
     return app

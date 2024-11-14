@@ -74,23 +74,7 @@ This commmand will collect data every second from the treadmill:
 ### Treadmill controller server
 The program starts an http server, by default on 127.0.0.1:11198. The host and port are configurable as described in the comand options above.
 
-The server exposes two routes:
-
-* `POST /treadmill/start`: to start the treadmill.
-  Curl example:
-  ```
-  curl -X POST http://127.0.0.1:11198/treadmill/start
-  ```
-* `POST /treadmill/stop`: to stop the treadmill.
-  Curl example:
-  ```
-  curl -X POST http://127.0.0.1:11198/treadmill/stop
-  ```
-* `POST /treadmill/toggle-start-stop`: to start the treadmill if it's running, otherwise stop it.
-  Curl example:
-  ```
-  curl -X POST http://127.0.0.1:11198/treadmill/toggle-start-stop
-  ```
+The server exposes routes to control the treadmill.
 
 A Swagger UI is available at the root route: http://127.0.0.1:11198/
 

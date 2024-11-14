@@ -4,7 +4,7 @@ from http import HTTPStatus
 from dependency_injector.wiring import Provide, inject
 from flask import Response
 from flask_smorest import Blueprint
-from marshmallow import Schema, fields
+from marshmallow import Schema, fields, validate
 
 from walkingpadfitbit.containers import Container
 from walkingpadfitbit.domain.treadmillcontroller import TreadmillController
@@ -85,4 +85,41 @@ async def toggle_start_stop(
     else:
         await ctler.start()
         status = Status.started
-    return {"status": status}
+    return ToggleResponseSchema().load({"status": status})
+
+
+class ChangeSpeedByResponseSchema(Schema):
+    new_speed_kph = fields.Float(
+        required=True,
+    )
+
+
+class ChangeSpeedByRequestSchema(Schema):
+    speed_delta_kph = fields.Float(
+        required=True,
+        validate=validate.Range(min=-1.0, max=1.0),
+    )
+
+
+@bp.route("/change-speed-by", methods=("POST",))
+@bp.arguments(
+    ChangeSpeedByRequestSchema,
+)
+@bp.response(
+    HTTPStatus.OK,
+    ChangeSpeedByResponseSchema,
+    description="The treadmill speed was successfully changed",
+)
+@ensure_sync
+@inject
+async def change_speed_by(
+    input: ChangeSpeedByRequestSchema,
+    ctler: TreadmillController = Provide[Container.treadmill_controller],
+) -> ChangeSpeedByResponseSchema:
+    """
+    Change the speed of the treadmill by the given difference, in km/h.
+    """
+    new_speed_kph = await ctler.change_speed_by(
+        speed_delta_kph=input["speed_delta_kph"]
+    )
+    return ChangeSpeedByResponseSchema().load({"new_speed_kph": new_speed_kph})
