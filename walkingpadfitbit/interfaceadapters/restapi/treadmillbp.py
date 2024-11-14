@@ -85,4 +85,4 @@ async def toggle_start_stop(
     else:
         await ctler.start()
         status = Status.started
-    return {"status": status}
+    return ToggleResponseSchema().load({"status": status})
