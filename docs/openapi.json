@@ -46,6 +46,39 @@
           "treadmill"
         ]
       }
+    },
+    "/treadmill/change-speed-by": {
+      "post": {
+        "responses": {
+          "422": {
+            "$ref": "#/components/responses/UNPROCESSABLE_ENTITY"
+          },
+          "200": {
+            "description": "The treadmill speed was successfully changed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ChangeSpeedByResponse"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ChangeSpeedByRequest"
+              }
+            }
+          }
+        },
+        "summary": "Change the speed of the treadmill by the given difference, in km/h.",
+        "tags": [
+          "treadmill"
+        ]
+      }
     }
   },
   "info": {
@@ -61,6 +94,54 @@
   "openapi": "3.0.2",
   "components": {
     "schemas": {
+      "Error": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "integer",
+            "description": "Error code"
+          },
+          "status": {
+            "type": "string",
+            "description": "Error name"
+          },
+          "message": {
+            "type": "string",
+            "description": "Error message"
+          },
+          "errors": {
+            "type": "object",
+            "description": "Errors",
+            "additionalProperties": {}
+          }
+        }
+      },
+      "PaginationMetadata": {
+        "type": "object",
+        "properties": {
+          "total": {
+            "type": "integer"
+          },
+          "total_pages": {
+            "type": "integer"
+          },
+          "first_page": {
+            "type": "integer"
+          },
+          "last_page": {
+            "type": "integer"
+          },
+          "page": {
+            "type": "integer"
+          },
+          "previous_page": {
+            "type": "integer"
+          },
+          "next_page": {
+            "type": "integer"
+          }
+        }
+      },
       "ToggleResponse": {
         "type": "object",
         "properties": {
@@ -75,6 +156,42 @@
         "required": [
           "status"
         ]
+      },
+      "ChangeSpeedByRequest": {
+        "type": "object",
+        "properties": {
+          "speed_delta_kph": {
+            "type": "number",
+            "minimum": -1.0,
+            "maximum": 1.0
+          }
+        },
+        "required": [
+          "speed_delta_kph"
+        ]
+      },
+      "ChangeSpeedByResponse": {
+        "type": "object",
+        "properties": {
+          "new_speed_kph": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "new_speed_kph"
+        ]
+      }
+    },
+    "responses": {
+      "UNPROCESSABLE_ENTITY": {
+        "description": "Unprocessable Entity",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Error"
+            }
+          }
+        }
       }
     }
   }

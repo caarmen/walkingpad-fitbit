@@ -1,7 +1,8 @@
 import asyncio
 import logging
-from typing import Callable
+from typing import Annotated, Callable
 
+from annotated_types import Ge, Le
 from bleak.backends.device import BLEDevice
 from ph4_walkingpad.pad import Controller, WalkingPad, WalkingPadCurStatus
 
@@ -57,6 +58,19 @@ class WalkingpadTreadmillController(TreadmillController):
         logger.info("Stopped device.")
         await asyncio.sleep(3)
         await self.ctler.switch_mode(WalkingPad.MODE_STANDBY)
+
+    async def change_speed_by(
+        self,
+        speed_delta_kph: Annotated[float, Le(1.0), Ge(-1.0)],
+    ) -> float:
+        speed_before_kph: float = (
+            self.ctler.last_status.speed / 10 if self.ctler.last_status else 0.0
+        )
+
+        new_speed_kph = max(0.0, speed_before_kph + speed_delta_kph)
+
+        await self.ctler.change_speed(int(new_speed_kph * 10))
+        return new_speed_kph
 
 
 def _to_treadmill_event(status: WalkingPadCurStatus) -> TreadmillEvent:
