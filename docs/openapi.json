@@ -74,7 +74,8 @@
             }
           }
         },
-        "summary": "Change the speed of the treadmill by the given difference, in km/h.",
+        "summary": "Change the speed of the treadmill by a delta.",
+        "description": "Change the speed of the treadmill by the given difference, in km/h.",
         "tags": [
           "treadmill"
         ]

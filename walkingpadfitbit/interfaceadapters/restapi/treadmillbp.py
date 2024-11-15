@@ -117,6 +117,8 @@ async def change_speed_by(
     ctler: TreadmillController = Provide[Container.treadmill_controller],
 ) -> ChangeSpeedByResponseSchema:
     """
+    Change the speed of the treadmill by a delta.
+
     Change the speed of the treadmill by the given difference, in km/h.
     """
     new_speed_kph = await ctler.change_speed_by(
