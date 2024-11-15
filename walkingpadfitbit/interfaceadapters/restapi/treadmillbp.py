@@ -88,6 +88,36 @@ async def toggle_start_stop(
     return ToggleResponseSchema().load({"status": status})
 
 
+class SetSpeedRequestSchema(Schema):
+    speed_kph = fields.Float(
+        required=True,
+        validate=validate.Range(min=0.0),
+    )
+
+
+@bp.route("/set-speed", methods=("POST",))
+@bp.arguments(
+    SetSpeedRequestSchema,
+)
+@bp.response(
+    HTTPStatus.NO_CONTENT,
+    description="The treadmill speed was succesfully set",
+)
+@ensure_sync
+@inject
+async def set_speed(
+    input: SetSpeedRequestSchema,
+    ctler: TreadmillController = Provide[Container.treadmill_controller],
+):
+    """
+    Set the treadmill speed.
+
+    Set the treadmill speed to the given speed, in km/h.
+    """
+    await ctler.set_speed(input["speed_kph"])
+    return Response(status=HTTPStatus.NO_CONTENT)
+
+
 class ChangeSpeedByResponseSchema(Schema):
     new_speed_kph = fields.Float(
         required=True,

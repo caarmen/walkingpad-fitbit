@@ -62,6 +62,20 @@ SCENARIOS = [
         ),
     ),
     Scenario(
+        id="Set speed",
+        route="set-speed",
+        request_input={"speed_kph": 2.5},
+        expected_status_code=http.HTTPStatus.NO_CONTENT,
+        expected_body=None,
+    ),
+    Scenario(
+        id="Set speed with invalid value",
+        route="set-speed",
+        request_input={"speed_kph": -1.0},
+        expected_status_code=http.HTTPStatus.UNPROCESSABLE_ENTITY,
+        expected_body={"code": 422},
+    ),
+    Scenario(
         id="increase speed by 0.5",
         route="change-speed-by",
         request_input={"speed_delta_kph": 0.5},

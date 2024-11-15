@@ -32,6 +32,16 @@ class TreadmillController(ABC):
     async def stop(self) -> None: ...
 
     @abstractmethod
+    async def set_speed(
+        self,
+        speed_kph: Annotated[float, Ge(0.0)],
+    ) -> None:
+        """
+        Set the speed of the treadmill to the given speed.
+        :param speed_kph: the new treadmill speed in km/h.
+        """
+
+    @abstractmethod
     async def change_speed_by(
         self,
         speed_delta_kph: Annotated[float, Le(1.0), Ge(-1.0)],
