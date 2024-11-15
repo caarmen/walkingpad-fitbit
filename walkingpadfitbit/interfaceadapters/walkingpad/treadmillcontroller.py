@@ -59,6 +59,12 @@ class WalkingpadTreadmillController(TreadmillController):
         await asyncio.sleep(3)
         await self.ctler.switch_mode(WalkingPad.MODE_STANDBY)
 
+    async def set_speed(
+        self,
+        speed_kph: Annotated[float, Ge(0.0)],
+    ) -> None:
+        await self.ctler.change_speed(int(speed_kph * 10))
+
     async def change_speed_by(
         self,
         speed_delta_kph: Annotated[float, Le(1.0), Ge(-1.0)],

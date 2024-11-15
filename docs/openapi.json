@@ -47,6 +47,33 @@
         ]
       }
     },
+    "/treadmill/set-speed": {
+      "post": {
+        "responses": {
+          "422": {
+            "$ref": "#/components/responses/UNPROCESSABLE_ENTITY"
+          },
+          "204": {
+            "description": "The treadmill speed was succesfully set"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SetSpeedRequest"
+              }
+            }
+          }
+        },
+        "summary": "Set the treadmill speed.",
+        "description": "Set the treadmill speed to the given speed, in km/h.",
+        "tags": [
+          "treadmill"
+        ]
+      }
+    },
     "/treadmill/change-speed-by": {
       "post": {
         "responses": {
@@ -74,7 +101,8 @@
             }
           }
         },
-        "summary": "Change the speed of the treadmill by the given difference, in km/h.",
+        "summary": "Change the speed of the treadmill by a delta.",
+        "description": "Change the speed of the treadmill by the given difference, in km/h.",
         "tags": [
           "treadmill"
         ]
@@ -155,6 +183,18 @@
         },
         "required": [
           "status"
+        ]
+      },
+      "SetSpeedRequest": {
+        "type": "object",
+        "properties": {
+          "speed_kph": {
+            "type": "number",
+            "minimum": 0.0
+          }
+        },
+        "required": [
+          "speed_kph"
         ]
       },
       "ChangeSpeedByRequest": {
