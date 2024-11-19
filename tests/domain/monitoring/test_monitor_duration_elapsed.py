@@ -10,13 +10,13 @@ from bleak.exc import BleakDeviceNotFoundError
 from httpx import Response
 
 from tests.fakes.builtins.fakestdout import FakeStdout
-from tests.fakes.ph4_walkingpad.config import configure_fake_walkingpad
 from tests.fakes.ph4_walkingpad.fakecontroller import (
     ControllerScenario,
+    FakeController,
     FakeWalkingPadCurStatus,
 )
-from tests.fakes.ph4_walkingpad.fakescanner import ScannerScenario
 from tests.fixtures.authlib import AuthLibMocks, AuthLibScenario
+from walkingpadfitbit import container
 from walkingpadfitbit.domain.display.factory import DisplayMode, get_display
 from walkingpadfitbit.domain.monitoring.eventhandler import TreadmillEventHandler
 from walkingpadfitbit.domain.monitoring.eventhandler import dt as datetime_to_freeze
@@ -413,32 +413,28 @@ async def test_monitor_monitoring_duration_elapsed(
                 fake_get_response=monitor_scenario.fake_fitbit_daily_activity_response
             ),
         )
-        configure_fake_walkingpad(
-            mp,
-            ScannerScenario(
-                found_addresses=["some address"],
-            ),
+        fake_controller = FakeController(
             ControllerScenario(
                 cur_statuses=monitor_scenario.fake_walking_pad_cur_statuses,
                 is_connected_values=is_connected_values,
                 run_exceptions=controller_run_exceptions,
             ),
         )
+        with container.controller.override(fake_controller):
+            treadmill_event_handler = TreadmillEventHandler(
+                remote_activity_repository=remote_activity_repository,
+                display=get_display(display_mode),
+                event_output=event_output,
+            )
+            # Yield control to fetch the daily summary.
+            await asyncio.sleep(0)
 
-        treadmill_event_handler = TreadmillEventHandler(
-            remote_activity_repository=remote_activity_repository,
-            display=get_display(display_mode),
-            event_output=event_output,
-        )
-        # Yield control to fetch the daily summary.
-        await asyncio.sleep(0)
-
-        # When we monitor the walking pad data
-        await monitor(
-            treadmill_event_handler=treadmill_event_handler,
-            monitor_duration_s=1.0,
-            poll_interval_s=0.1,
-        )
+            # When we monitor the walking pad data
+            await monitor(
+                treadmill_event_handler=treadmill_event_handler,
+                monitor_duration_s=1.0,
+                poll_interval_s=0.1,
+            )
 
         # Then we send the expected api calls to Fitbit to retrieve the daily activity summary
         assert authlib_mocks.get.call_count == monitor_scenario.expected_get_call_count

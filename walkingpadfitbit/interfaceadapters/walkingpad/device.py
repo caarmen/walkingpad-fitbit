@@ -1,8 +1,7 @@
 import logging
-from typing import Any, Coroutine
+from typing import Any, Coroutine, Protocol
 
 from bleak.backends.device import BLEDevice
-from ph4_walkingpad.pad import Scanner
 
 logger = logging.getLogger(__name__)
 
@@ -10,10 +9,17 @@ logger = logging.getLogger(__name__)
 class DeviceNotFoundException(Exception): ...
 
 
+class ScannerProtocol(Protocol):
+    async def scan(self, *args, **kwargs): ...
+
+    @property
+    def walking_belt_candidates(self) -> list[BLEDevice]: ...
+
+
 async def get_device(
     device_name: str,
+    scanner: ScannerProtocol,
 ) -> Coroutine[Any, Any, BLEDevice]:
-    scanner = Scanner()
     await scanner.scan(dev_name=device_name.lower())
 
     if not scanner.walking_belt_candidates:

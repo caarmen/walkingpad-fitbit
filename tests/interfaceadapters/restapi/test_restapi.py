@@ -4,15 +4,18 @@ from typing import Any
 
 import pytest
 from flask.testing import FlaskClient
-from pytest import MonkeyPatch
 from werkzeug.test import TestResponse
 
-from tests.fakes.ph4_walkingpad.config import configure_fake_walkingpad
 from tests.fakes.ph4_walkingpad.fakecontroller import (
     ControllerScenario,
+    FakeController,
     FakeWalkingPadCurStatus,
 )
-from tests.fakes.ph4_walkingpad.fakescanner import ScannerScenario
+from tests.fakes.ph4_walkingpad.fakescanner import FakeBLEDevice
+from walkingpadfitbit import container
+from walkingpadfitbit.interfaceadapters.walkingpad.treadmillcontroller import (
+    WalkingpadTreadmillController,
+)
 
 
 @dataclasses.dataclass
@@ -152,27 +155,25 @@ SCENARIOS = [
 )
 def test_treadmill_command(
     restapi_client: FlaskClient,
-    monkeypatch: MonkeyPatch,
     scenario: Scenario,
 ):
-    with monkeypatch.context() as mp:
-        configure_fake_walkingpad(
-            mp,
-            ScannerScenario(
-                found_addresses=["some address"],
-            ),
-            controller_scenario=scenario.controller_scenario,
-        )
+    fake_ble_device = FakeBLEDevice(address="some address")
+    fake_controller = FakeController(scenario.controller_scenario)
+    walkingpad_treadmill_controller = WalkingpadTreadmillController(
+        device=fake_ble_device,
+        controller=fake_controller,
+    )
 
+    with container.treadmill_controller.override(walkingpad_treadmill_controller):
         response: TestResponse = restapi_client.post(
             f"/treadmill/{scenario.route}",
             json=scenario.request_input,
         )
-        assert response.status_code == scenario.expected_status_code
-        if scenario.expected_body is None:
-            assert response.json is None
-        else:
-            # Check that the actual response contains at least the content of the expected response.
-            # Don't compare the full contents: in the case of errors, the framework adds some detailed error messages
-            # for which we don't need to assert the exact content.
-            assert response.json.items() >= scenario.expected_body.items()
+    assert response.status_code == scenario.expected_status_code
+    if scenario.expected_body is None:
+        assert response.json is None
+    else:
+        # Check that the actual response contains at least the content of the expected response.
+        # Don't compare the full contents: in the case of errors, the framework adds some detailed error messages
+        # for which we don't need to assert the exact content.
+        assert response.json.items() >= scenario.expected_body.items()

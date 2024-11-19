@@ -5,8 +5,9 @@ from typing import Callable
 
 import pytest
 
-from tests.fakes.ph4_walkingpad.config import configure_fake_walkingpad
+from tests.fakes.ph4_walkingpad.fakescanner import FakeScanner
 from tests.fixtures.authlib import AuthLibMocks, AuthLibScenario
+from walkingpadfitbit import container
 from walkingpadfitbit.auth import storage
 from walkingpadfitbit.main import main
 
@@ -45,7 +46,6 @@ async def test_main_required_args(
     """
     Given an authlib setup to provide successful responses,
     and no prior oauth token saved,
-    And no connected walkingpad
     When we call the main() entry point with required command-line arguments
     Then the authentication is successful
     And the oauth token is saved.
@@ -55,9 +55,6 @@ async def test_main_required_args(
         # Given an authlib setup to provide successful responses,
         scenario = AuthLibScenario(fake_oauth_token=fake_oauth_token)
         fake_oauth_client(mp, scenario)
-
-        # Given no connected walkingpad
-        configure_fake_walkingpad(mp)
 
         # Simulate the user's command-line arguments.
         mp.setattr(
@@ -112,9 +109,6 @@ async def test_main_optional_args(
         scenario = AuthLibScenario(fake_oauth_token=fake_oauth_token)
         fake_oauth_client(mp, scenario)
 
-        # Given no connected walkingpad
-        configure_fake_walkingpad(mp)
-
         # Simulate the user's command-line arguments.
         mp.setattr(
             sys,
@@ -137,8 +131,10 @@ async def test_main_optional_args(
         saved_token = storage.read_oauth_token()
         assert saved_token is None
 
-        # When we call the main() entry point
-        await main(env_file=".env.test")
+        # Given no connected walkingpad
+        with container.scanner.override(FakeScanner()):
+            # When we call the main() entry point
+            await main(env_file=".env.test")
 
         # Then the authentication is successful
         # And the oauth token is saved.
