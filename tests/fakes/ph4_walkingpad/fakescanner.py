@@ -1,9 +1,11 @@
 from dataclasses import dataclass
 
+from bleak.backends.device import BLEDevice
 
-@dataclass
-class FakeBLEDevice:
-    address: str
+
+class FakeBLEDevice(BLEDevice):
+    def __init__(self, address: str = "some address"):
+        super().__init__(address, name=None, details=None, rssi=0)
 
 
 @dataclass
@@ -21,6 +23,4 @@ class FakeScanner:
         self.walking_belt_candidates = []
         if self.scenario.found_addresses:
             for found_address in self.scenario.found_addresses:
-                self.walking_belt_candidates.append(
-                    FakeBLEDevice(address=found_address)
-                )
+                self.walking_belt_candidates.append(FakeBLEDevice(found_address))

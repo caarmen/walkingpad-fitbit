@@ -17,7 +17,7 @@ from walkingpadfitbit.interfaceadapters.walkingpad.treadmillcontroller import (
 
 @pytest.mark.asyncio
 async def test_start():
-    fake_ble_device = FakeBLEDevice(address="some address")
+    fake_ble_device = FakeBLEDevice()
     fake_controller = FakeController()
     walkingpad_treadmill_controller = WalkingpadTreadmillController(
         device=fake_ble_device,
@@ -34,7 +34,7 @@ async def test_start():
 
 @pytest.mark.asyncio
 async def test_stop():
-    fake_ble_device = FakeBLEDevice(address="some address")
+    fake_ble_device = FakeBLEDevice()
     fake_controller = FakeController()
     walkingpad_treadmill_controller = WalkingpadTreadmillController(
         device=fake_ble_device,
@@ -86,7 +86,7 @@ SET_SPEED_SCENARIOS = [
 async def test_set_speed(
     scenario: SetSpeedScenario,
 ):
-    fake_ble_device = FakeBLEDevice(address="some address")
+    fake_ble_device = FakeBLEDevice()
     fake_controller = FakeController(scenario.controller_scenario)
     walkingpad_treadmill_controller = WalkingpadTreadmillController(
         device=fake_ble_device,
@@ -163,7 +163,7 @@ CHANGE_SPEED_BY_SCENARIOS = [
 async def test_change_speed_by(
     scenario: ChangeSpeedByScenario,
 ):
-    fake_ble_device = FakeBLEDevice(address="some address")
+    fake_ble_device = FakeBLEDevice()
     fake_controller = FakeController(scenario.controller_scenario)
     walkingpad_treadmill_controller = WalkingpadTreadmillController(
         device=fake_ble_device,

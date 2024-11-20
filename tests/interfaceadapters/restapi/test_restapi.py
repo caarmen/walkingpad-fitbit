@@ -190,7 +190,7 @@ def test_treadmill_command(
     restapi_client: FlaskClient,
     scenario: Scenario,
 ):
-    fake_ble_device = FakeBLEDevice(address="some address")
+    fake_ble_device = FakeBLEDevice()
     fake_controller = FakeController(scenario.controller_scenario)
     walkingpad_treadmill_controller = WalkingpadTreadmillController(
         device=fake_ble_device,
