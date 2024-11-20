@@ -8,3 +8,4 @@ def reset_container():
     # Reset singletons for each test.
     # https://github.com/ets-labs/python-dependency-injector/issues/421
     container.reset_singletons()
+    container.config.set("device.name", "some device")

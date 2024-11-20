@@ -13,7 +13,6 @@ from tests.fakes.ph4_walkingpad.fakecontroller import (
     FakeWalkingPadCurStatus,
 )
 from tests.fakes.ph4_walkingpad.fakescanner import ScannerScenario
-from walkingpadfitbit import container
 
 
 @dataclasses.dataclass
@@ -165,7 +164,6 @@ def test_treadmill_command(
             controller_scenario=scenario.controller_scenario,
         )
 
-        container.config.set("device.name", "some device")
         response: TestResponse = restapi_client.post(
             f"/treadmill/{scenario.route}",
             json=scenario.request_input,

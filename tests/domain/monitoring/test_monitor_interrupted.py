@@ -18,7 +18,6 @@ from tests.fakes.ph4_walkingpad.fakecontroller import (
 )
 from tests.fakes.ph4_walkingpad.fakescanner import ScannerScenario
 from tests.fixtures.authlib import AuthLibMocks, AuthLibScenario
-from walkingpadfitbit import container
 from walkingpadfitbit.domain.display.factory import DisplayMode, get_display
 from walkingpadfitbit.domain.monitoring.eventhandler import TreadmillEventHandler
 from walkingpadfitbit.domain.monitoring.eventhandler import dt as datetime_to_freeze
@@ -296,8 +295,6 @@ async def test_monitor_monitoring_interrupted(
         async def send_interrupt_signal():
             await sleep(1)
             signal.raise_signal(signal.SIGINT)
-
-        container.config.set("device.name", "some device")
 
         # When we call the main() entry point
         async with TaskGroup() as tg:

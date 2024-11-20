@@ -17,7 +17,6 @@ from tests.fakes.ph4_walkingpad.fakecontroller import (
 )
 from tests.fakes.ph4_walkingpad.fakescanner import ScannerScenario
 from tests.fixtures.authlib import AuthLibMocks, AuthLibScenario
-from walkingpadfitbit import container
 from walkingpadfitbit.domain.display.factory import DisplayMode, get_display
 from walkingpadfitbit.domain.monitoring.eventhandler import TreadmillEventHandler
 from walkingpadfitbit.domain.monitoring.eventhandler import dt as datetime_to_freeze
@@ -435,7 +434,6 @@ async def test_monitor_monitoring_duration_elapsed(
         await asyncio.sleep(0)
 
         # When we monitor the walking pad data
-        container.config.set("device.name", "some device")
         await monitor(
             treadmill_event_handler=treadmill_event_handler,
             monitor_duration_s=1.0,
