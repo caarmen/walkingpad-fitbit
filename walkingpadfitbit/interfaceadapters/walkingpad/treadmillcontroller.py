@@ -93,20 +93,36 @@ class WalkingpadTreadmillController(TreadmillController):
         self,
         speed_kph: Annotated[float, Ge(0.0)],
     ) -> None:
-        await self.ctler.change_speed(int(speed_kph * 10))
+        await self.ctler.change_speed(_kph_to_treadmill_speed(speed_kph))
 
     async def change_speed_by(
         self,
         speed_delta_kph: Annotated[float, Le(1.0), Ge(-1.0)],
     ) -> float:
         speed_before_kph: float = (
-            self.ctler.last_status.speed / 10 if self.ctler.last_status else 0.0
+            _treadmill_speed_to_kph(self.ctler.last_status.speed)
+            if self.ctler.last_status
+            else 0.0
         )
 
         new_speed_kph = max(0.0, speed_before_kph + speed_delta_kph)
 
-        await self.ctler.change_speed(int(new_speed_kph * 10))
+        await self.ctler.change_speed(_kph_to_treadmill_speed(new_speed_kph))
         return new_speed_kph
+
+
+def _treadmill_speed_to_kph(treadmill_speed: int) -> float:
+    """
+    Return a speed in km/h for the given speed in the treadmill's units.
+    """
+    return treadmill_speed / 10
+
+
+def _kph_to_treadmill_speed(speed_kph: float) -> int:
+    """
+    Return a speed in the treadmill's units for the given speed in km/h.
+    """
+    return int(speed_kph * 10)
 
 
 def _to_treadmill_event(status: WalkingPadCurStatus) -> TreadmillEvent:
@@ -121,6 +137,6 @@ def _to_treadmill_event(status: WalkingPadCurStatus) -> TreadmillEvent:
         return TreadmillWalkEvent(
             time_s=status.time,
             dist_km=status.dist / 100,
-            speed_kph=status.speed / 10,
+            speed_kph=_treadmill_speed_to_kph(status.speed),
         )
     return TreadmillStopEvent
