@@ -107,6 +107,32 @@
           "treadmill"
         ]
       }
+    },
+    "/treadmill/set-pref-start-speed": {
+      "post": {
+        "responses": {
+          "422": {
+            "$ref": "#/components/responses/UNPROCESSABLE_ENTITY"
+          },
+          "204": {
+            "description": "The treadmill's preferred start speed was successfully set."
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SetSpeedRequest"
+              }
+            }
+          }
+        },
+        "summary": "Set the preferred start speed of the treadmill.",
+        "tags": [
+          "treadmill"
+        ]
+      }
     }
   },
   "info": {

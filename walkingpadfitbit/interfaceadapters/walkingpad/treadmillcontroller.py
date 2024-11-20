@@ -2,7 +2,7 @@ import asyncio
 import logging
 from typing import Annotated, Callable, Protocol
 
-from annotated_types import Ge, Le
+from annotated_types import Ge, Gt, Le
 from bleak.backends.device import BLEDevice
 from ph4_walkingpad.pad import WalkingPad, WalkingPadCurStatus
 
@@ -43,6 +43,8 @@ class ControllerProtocol(Protocol):
     async def stop_belt(self): ...
 
     async def change_speed(self, speed: int): ...
+
+    async def set_pref_start_speed(self, speed: int): ...
 
 
 class WalkingpadTreadmillController(TreadmillController):
@@ -109,6 +111,12 @@ class WalkingpadTreadmillController(TreadmillController):
 
         await self.ctler.change_speed(_kph_to_treadmill_speed(new_speed_kph))
         return new_speed_kph
+
+    async def set_pref_start_speed(
+        self,
+        speed_kph: Annotated[float, Gt(0.0)],
+    ):
+        await self.ctler.set_pref_start_speed(_kph_to_treadmill_speed(speed_kph))
 
 
 def _treadmill_speed_to_kph(treadmill_speed: int) -> float:
