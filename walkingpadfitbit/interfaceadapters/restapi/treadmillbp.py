@@ -155,3 +155,22 @@ async def change_speed_by(
         speed_delta_kph=input["speed_delta_kph"]
     )
     return ChangeSpeedByResponseSchema().load({"new_speed_kph": new_speed_kph})
+
+
+@bp.route("/set-pref-start-speed", methods=("POST",))
+@bp.arguments(SetSpeedRequestSchema)
+@bp.response(
+    HTTPStatus.NO_CONTENT,
+    description="The treadmill's preferred start speed was successfully set.",
+)
+@ensure_sync
+@inject
+async def set_pref_start_speed(
+    input: SetSpeedRequestSchema,
+    ctler: TreadmillController = Provide[Container.treadmill_controller],
+):
+    """
+    Set the preferred start speed of the treadmill.
+    """
+    await ctler.set_pref_start_speed(speed_kph=input["speed_kph"])
+    return Response(status=HTTPStatus.NO_CONTENT)

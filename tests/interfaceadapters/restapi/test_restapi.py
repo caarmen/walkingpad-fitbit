@@ -178,6 +178,15 @@ SCENARIOS = [
             )
         ),
     ),
+    Scenario(
+        id="set pref start speed",
+        route="set-pref-start-speed",
+        request_input={"speed_kph": 2.2},
+        expected_controller_method_calls=[
+            Call("set_pref_start_speed", (), {"speed_kph": 2.2}),
+        ],
+        expected_status_code=http.HTTPStatus.NO_CONTENT,
+    ),
 ]
 
 

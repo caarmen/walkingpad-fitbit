@@ -174,3 +174,16 @@ async def test_change_speed_by(
         scenario.requested_speed_delta_kph
     )
     assert spy_controller.method_calls == scenario.expected_controller_method_calls
+
+
+@pytest.mark.asyncio
+async def test_set_pref_start_speed():
+    fake_ble_device = FakeBLEDevice()
+    fake_controller = FakeController()
+    walkingpad_treadmill_controller = WalkingpadTreadmillController(
+        device=fake_ble_device,
+        controller=fake_controller,
+    )
+    spy_controller = Spy(fake_controller)
+    await walkingpad_treadmill_controller.set_pref_start_speed(2.3)
+    assert spy_controller.method_calls == [Call("set_pref_start_speed", (23,))]

@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 from typing import Annotated, Callable
 
-from annotated_types import Ge, Le
+from annotated_types import Ge, Gt, Le
 
 from walkingpadfitbit.domain.entities.event import TreadmillEvent
 
@@ -51,4 +51,13 @@ class TreadmillController(ABC):
         :param speed_delta_kph: the difference (negative or positive) speed in km/h to apply to the current speed.
 
         :return: the new treadmill speed.
+        """
+
+    @abstractmethod
+    async def set_pref_start_speed(
+        self,
+        speed_kph: Annotated[float, Gt(0.0)],
+    ):
+        """
+        Set the preferred start speed of the treadmill.
         """
