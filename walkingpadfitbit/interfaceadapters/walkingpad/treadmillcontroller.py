@@ -1,10 +1,10 @@
 import asyncio
 import logging
-from typing import Annotated, Callable
+from typing import Annotated, Callable, Protocol
 
 from annotated_types import Ge, Le
 from bleak.backends.device import BLEDevice
-from ph4_walkingpad.pad import Controller, WalkingPad, WalkingPadCurStatus
+from ph4_walkingpad.pad import WalkingPad, WalkingPadCurStatus
 
 from walkingpadfitbit.domain.entities.event import (
     TreadmillEvent,
@@ -16,12 +16,42 @@ from walkingpadfitbit.domain.treadmillcontroller import TreadmillController
 logger = logging.getLogger(__name__)
 
 
+class BleakClientProtocol(Protocol):
+    @property
+    def is_connected(self): ...
+
+    async def disconnect(self): ...
+
+
+class ControllerProtocol(Protocol):
+    @property
+    def client(self) -> BleakClientProtocol: ...
+
+    @property
+    def last_status(self) -> WalkingPadCurStatus: ...
+
+    async def run(self, *args, **kwargs): ...
+
+    async def ask_stats(self, *args, **kwargs): ...
+
+    async def disconnect(self): ...
+
+    async def switch_mode(self, mode: int): ...
+
+    async def start_belt(self): ...
+
+    async def stop_belt(self): ...
+
+    async def change_speed(self, speed: int): ...
+
+
 class WalkingpadTreadmillController(TreadmillController):
     def __init__(
         self,
         device: BLEDevice,
+        controller: ControllerProtocol,
     ) -> None:
-        self.ctler = Controller()
+        self.ctler = controller
         self.device = device
 
     def subscribe(self, callback: Callable[[TreadmillEvent], None]) -> None:

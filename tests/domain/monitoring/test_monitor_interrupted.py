@@ -11,12 +11,11 @@ from bleak.exc import BleakDeviceNotFoundError
 from httpx import Response
 
 from tests.fakes.builtins.fakestdout import FakeStdout
-from tests.fakes.ph4_walkingpad.config import configure_fake_walkingpad
 from tests.fakes.ph4_walkingpad.fakecontroller import (
     ControllerScenario,
+    FakeController,
     FakeWalkingPadCurStatus,
 )
-from tests.fakes.ph4_walkingpad.fakescanner import ScannerScenario
 from tests.fixtures.authlib import AuthLibMocks, AuthLibScenario
 from walkingpadfitbit import container
 from walkingpadfitbit.domain.display.factory import DisplayMode, get_display
@@ -275,18 +274,6 @@ async def test_monitor_monitoring_interrupted(
                 )
             ),
         )
-        configure_fake_walkingpad(
-            mp,
-            ScannerScenario(
-                found_addresses=["some address"],
-            ),
-            ControllerScenario(
-                cur_statuses=monitor_scenario.fake_walking_pad_cur_statuses,
-                is_connected_values=is_connected_values,
-                run_exceptions=controller_run_exceptions,
-            ),
-        )
-
         treadmill_event_handler = TreadmillEventHandler(
             remote_activity_repository=remote_activity_repository,
             display=get_display(display_mode),
@@ -297,19 +284,25 @@ async def test_monitor_monitoring_interrupted(
             await sleep(1)
             signal.raise_signal(signal.SIGINT)
 
-        container.config.set("device.name", "some device")
-
-        # When we call the main() entry point
-        async with TaskGroup() as tg:
-            tg.create_task(
-                # When we monitor the walking pad data
-                monitor(
-                    treadmill_event_handler=treadmill_event_handler,
-                    monitor_duration_s=None,
-                    poll_interval_s=0.1,
+        fake_controller = FakeController(
+            ControllerScenario(
+                cur_statuses=monitor_scenario.fake_walking_pad_cur_statuses,
+                is_connected_values=is_connected_values,
+                run_exceptions=controller_run_exceptions,
+            ),
+        )
+        with container.controller.override(fake_controller):
+            # When we call the main() entry point
+            async with TaskGroup() as tg:
+                tg.create_task(
+                    # When we monitor the walking pad data
+                    monitor(
+                        treadmill_event_handler=treadmill_event_handler,
+                        monitor_duration_s=None,
+                        poll_interval_s=0.1,
+                    )
                 )
-            )
-            tg.create_task(send_interrupt_signal())
+                tg.create_task(send_interrupt_signal())
 
         # Then we send the expected api calls to Fitbit to retrieve the daily activity summary
         assert authlib_mocks.get.call_count == monitor_scenario.expected_get_call_count
