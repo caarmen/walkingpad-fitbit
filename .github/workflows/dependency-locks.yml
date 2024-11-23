@@ -16,13 +16,7 @@ jobs:
         run: |
           python -m pip install -r requirements/lock/tools.lock --upgrade pip
       - name: Generate lock files
-        run: |
-          pip-compile requirements/dev.in --output-file requirements/lock/linux/dev.txt
-          pip-compile requirements/prod.in --output-file requirements/lock/linux/prod.txt
-      - name: Lock file diff
-        shell: bash
-        run: |
-          git diff -u requirements/lock/linux > diff-lock-linux.patch || true
+        run: bash scripts/gen-lock-files.sh
       - name: Archive lockfiles
         uses: actions/upload-artifact@v4
         with:
@@ -42,14 +36,7 @@ jobs:
         run: |
           python -m pip install -r requirements/lock/tools.lock --upgrade pip
       - name: Generate lock files
-        run: |
-          pip-compile requirements/dev.in --output-file requirements/lock/win32/dev.txt
-          pip-compile requirements/prod.in --output-file requirements/lock/win32/prod.txt
-      - name: Lock file diff
-        shell: pwsh
-        run: |
-          git diff -u --ignore-all-space requirements/lock/win32 > diff-lock-win32.patch
-          exit 0
+        run: bash scripts/gen-lock-files.sh
       - name: Archive lockfiles
         uses: actions/upload-artifact@v4
         with:
