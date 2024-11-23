@@ -4,8 +4,16 @@ on:
   pull_request:
 
 jobs:
-  Linux-dependency-lockfiles:
-    runs-on: ubuntu-latest
+  generate-lockfiles:
+    runs-on: ${{ matrix.platform }}
+    strategy:
+      matrix:
+        platform: [ubuntu-latest, windows-latest]
+        include:
+          - platform: ubuntu-latest
+            python_platform: linux
+          - platform: windows-latest
+            python_platform: win32
     steps:
       - uses: actions/checkout@v4
       - name: Set up Python
@@ -20,28 +28,7 @@ jobs:
       - name: Archive lockfiles
         uses: actions/upload-artifact@v4
         with:
-          name: linux-lock-files
+          name: ${{ matrix.python_platform}}-lock-files
           path: |
-            diff-lock-linux.patch
-            requirements/lock/linux/*
-  Windows-dependency-lockfiles:
-    runs-on: windows-latest
-    steps:
-      - uses: actions/checkout@v4
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.12'
-      - name: Install pip-tools
-        run: |
-          python -m pip install -r requirements/lock/tools.lock --upgrade pip
-      - name: Generate lock files
-        run: bash scripts/gen-lock-files.sh
-      - name: Archive lockfiles
-        uses: actions/upload-artifact@v4
-        with:
-          name: windows-lock-files
-          path: |
-            diff-lock-win32.patch
-            requirements/lock/win32/*
-
+            diff-lock-${{ matrix.python_platform}}.patch
+            requirements/lock/${{ matrix.python_platform}}/*
