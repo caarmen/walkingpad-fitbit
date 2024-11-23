@@ -1,0 +1,60 @@
+name: Dependency locks
+
+on:
+  pull_request:
+
+jobs:
+  Linux-dependency-lockfiles:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install pip-tools
+        run: |
+          python -m pip install -r requirements/lock/tools.lock --upgrade pip
+      - name: Generate lock files
+        run: |
+          pip-compile requirements/dev.in --output-file requirements/lock/linux/dev.txt
+          pip-compile requirements/prod.in --output-file requirements/lock/linux/prod.txt
+      - name: Lock file diff
+        shell: bash
+        run: |
+          git diff -u requirements/lock/linux > diff-lock-linux.patch || true
+      - name: Archive lockfiles
+        uses: actions/upload-artifact@v4
+        with:
+          name: linux-lock-files
+          path: |
+            diff-lock-linux.patch
+            requirements/lock/linux/*
+  Windows-dependency-lockfiles:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install pip-tools
+        run: |
+          python -m pip install -r requirements/lock/tools.lock --upgrade pip
+      - name: Generate lock files
+        run: |
+          pip-compile requirements/dev.in --output-file requirements/lock/win32/dev.txt
+          pip-compile requirements/prod.in --output-file requirements/lock/win32/prod.txt
+      - name: Lock file diff
+        shell: pwsh
+        run: |
+          git diff -u --ignore-all-space requirements/lock/win32 > diff-lock-win32.patch
+          exit 0
+      - name: Archive lockfiles
+        uses: actions/upload-artifact@v4
+        with:
+          name: windows-lock-files
+          path: |
+            diff-lock-win32.patch
+            requirements/lock/win32/*
+
