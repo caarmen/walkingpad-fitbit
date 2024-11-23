@@ -9,5 +9,6 @@ then
 fi
 
 source .venv/bin/activate
-pip install --requirement requirements/prod.txt
+platform=$(python -c "import sys; print(sys.platform)")
+pip install --requirement requirements/lock/$platform/prod.txt
 exec python -m walkingpadfitbit.main $*
